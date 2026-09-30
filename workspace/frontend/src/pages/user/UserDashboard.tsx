@@ -4,7 +4,6 @@ import {
   FileText,
   MapPin,
   Trophy,
-  Activity,
   Star,
   Gift,
   ArrowRight,
@@ -130,7 +129,7 @@ export function UserDashboard() {
       {/* Quick Action Navigation Grid (Includes Pinpoint Location on Map) */}
       <div>
         <h2 className="text-lg font-bold text-slate-900 dark:text-white mb-3">Quick Civic Services</h2>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3.5">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3.5">
           {/* 1. Pinpoint Location on Map (Explicitly requested by user) */}
           <Link
             to="/user/map"
@@ -156,20 +155,6 @@ export function UserDashboard() {
             <div>
               <span className="text-xs font-bold text-slate-900 dark:text-white block">File Complaint</span>
               <span className="text-[11px] text-slate-500 dark:text-slate-400">AI Photo + Report</span>
-            </div>
-          </Link>
-
-          {/* 3. Track Status */}
-          <Link
-            to="/user/status"
-            className="bg-white dark:bg-slate-900 p-4 rounded-2xl border-2 border-amber-500/20 hover:border-amber-500 dark:border-slate-800 dark:hover:border-amber-500 shadow-sm flex flex-col items-center text-center gap-2 hover:-translate-y-0.5 transition-all group"
-          >
-            <div className="w-12 h-12 rounded-xl bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 flex items-center justify-center group-hover:scale-110 transition-transform">
-              <Activity className="w-6 h-6" />
-            </div>
-            <div>
-              <span className="text-xs font-bold text-slate-900 dark:text-white block">Track Status</span>
-              <span className="text-[11px] text-slate-500 dark:text-slate-400">Live Simulation</span>
             </div>
           </Link>
 
@@ -277,16 +262,6 @@ export function UserDashboard() {
                   Pickups
                 </div>
               </div>
-            </div>
-
-            <div className="pt-2 text-center">
-              <Link
-                to="/user/complaint"
-                className="w-full inline-flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition-all shadow-sm"
-              >
-                <FileText className="w-3.5 h-3.5" />
-                <span>Report Waste Now</span>
-              </Link>
             </div>
           </div>
         </div>

@@ -10,7 +10,6 @@ import {
   Menu,
   X,
   AlertTriangle,
-  Activity,
   Trophy,
   Star,
   Gift,
@@ -23,7 +22,6 @@ import {
 const userLinks = [
   { to: '/user/map', label: 'Pinpoint Map', icon: Compass },
   { to: '/user/complaint', label: 'File Complaint', icon: AlertTriangle },
-  { to: '/user/status', label: 'Track Status', icon: Activity },
   { to: '/user/facility', label: 'Facility', icon: MapPin },
   { to: '/user/leaderboard', label: 'Leaderboard', icon: Trophy },
   { to: '/user/points', label: 'Points', icon: Star },

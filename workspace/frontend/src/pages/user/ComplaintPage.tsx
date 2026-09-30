@@ -221,19 +221,7 @@ export function ComplaintPage() {
         </div>
 
         {/* Actions */}
-        <div className="space-y-2.5 pt-2">
-          <Link
-            to="/user/status"
-            className="block w-full py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow transition"
-          >
-            Track Status &amp; Live Simulation
-          </Link>
-          <Link
-            to="/user/facility"
-            className="block w-full py-3 px-4 rounded-xl bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 hover:bg-slate-50 text-slate-800 dark:text-slate-200 font-bold text-xs transition"
-          >
-            Find Nearest Recycling Facility
-          </Link>
+        <div className="pt-2">
           <button
             type="button"
             onClick={() => {
@@ -241,9 +229,9 @@ export function ComplaintPage() {
               setDescription('');
               handleRemovePhoto();
             }}
-            className="text-xs text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 font-medium pt-2 cursor-pointer"
+            className="w-full py-3.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-bold text-xs shadow-md transition-all cursor-pointer flex items-center justify-center gap-2"
           >
-            File Another Complaint
+            <span>File Another Complaint</span>
           </button>
         </div>
       </div>
