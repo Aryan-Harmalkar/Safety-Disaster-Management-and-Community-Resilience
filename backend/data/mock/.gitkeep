@@ -1,0 +1,7 @@
+[
+  {
+    "_comment": "Place mock JSON data files here during early development.",
+    "_comment2": "When the backend grows, replace with a real database (SQLite, JSON file, etc.).",
+    "_example": "incidents.json, alerts.json, resources.json"
+  }
+]
