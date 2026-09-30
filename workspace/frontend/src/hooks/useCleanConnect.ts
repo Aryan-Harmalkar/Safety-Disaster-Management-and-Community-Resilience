@@ -37,7 +37,7 @@ export function useCleanConnect() {
         if (parsed.name) return parsed.name;
       }
     } catch {}
-    return 'Aryan Fernandes';
+    return 'Saurabh Chari';
   });
 
   const [points, setPoints] = useState<number>(() => {

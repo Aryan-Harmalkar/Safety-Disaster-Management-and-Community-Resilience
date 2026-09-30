@@ -175,19 +175,24 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   // 2. Citizen profile and points
   const [citizenName, setCitizenName] = useState<string>(() => {
-    if (typeof window === 'undefined') return 'Citizen of Goa';
+    if (typeof window === 'undefined') return 'Saurabh Chari';
     try {
       const saved = localStorage.getItem(LOCAL_STORAGE_KEY_USER);
       if (saved) {
         const parsed = JSON.parse(saved);
-        if (typeof parsed.name === 'string' && parsed.name.trim()) {
+        if (
+          typeof parsed.name === 'string' &&
+          parsed.name.trim() &&
+          parsed.name !== 'Citizen of Goa' &&
+          parsed.name !== 'Aryan Fernandes'
+        ) {
           return parsed.name;
         }
       }
     } catch (err) {
       console.error('Error reading citizen user from localStorage:', err);
     }
-    return 'Citizen of Goa';
+    return 'Saurabh Chari';
   });
 
   const [points, setPoints] = useState<number>(() => {

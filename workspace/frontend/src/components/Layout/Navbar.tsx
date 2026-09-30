@@ -9,7 +9,6 @@ import {
   LogOut,
   Menu,
   X,
-  Home,
   AlertTriangle,
   Activity,
   Trophy,
@@ -22,7 +21,6 @@ import {
 } from 'lucide-react';
 
 const userLinks = [
-  { to: '/user', label: 'Home', icon: Home },
   { to: '/user/map', label: 'Pinpoint Map', icon: Compass },
   { to: '/user/complaint', label: 'File Complaint', icon: AlertTriangle },
   { to: '/user/status', label: 'Track Status', icon: Activity },
