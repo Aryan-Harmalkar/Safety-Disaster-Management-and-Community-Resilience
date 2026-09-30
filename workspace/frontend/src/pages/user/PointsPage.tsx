@@ -54,7 +54,7 @@ export function PointsPage() {
 
         {/* Redeem Button */}
         <Link 
-          to="/user/redemption" 
+          to="/user/redeem" 
           className="flex items-center justify-center gap-2 w-full bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-750 text-emerald-600 dark:text-emerald-400 font-bold py-4 rounded-xl shadow-sm border border-emerald-100 dark:border-gray-700 transition-colors"
         >
           <Gift className="h-6 w-6" />

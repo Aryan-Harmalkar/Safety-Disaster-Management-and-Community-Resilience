@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Camera, Image as ImageIcon, MapPin, CheckCircle2, ArrowLeft, AlertCircle } from 'lucide-react';
 import { useAppContext } from '../../hooks/useCleanConnect';
@@ -19,9 +19,9 @@ export function ComplaintPage() {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
 
-  const coords: [number, number] = state.currentLocation 
-    ? [state.currentLocation.latitude, state.currentLocation.longitude] 
-    : [15.4909, 73.8278]; // Default Goa
+  const lat = state.currentLocation?.latitude ?? 15.4909;
+  const lng = state.currentLocation?.longitude ?? 73.8278;
+  const coords = useMemo<[number, number]>(() => [lat, lng], [lat, lng]);
 
   // Initialize mini-map
   useEffect(() => {
@@ -36,10 +36,24 @@ export function ComplaintPage() {
       }).setView(coords, 14);
       
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(mapInstanceRef.current);
-      L.marker(coords).addTo(mapInstanceRef.current);
     } else {
       mapInstanceRef.current.setView(coords, 14);
     }
+
+    // Clear and re-add marker
+    mapInstanceRef.current.eachLayer((layer) => {
+      if (layer instanceof L.Marker) {
+        mapInstanceRef.current?.removeLayer(layer);
+      }
+    });
+    L.marker(coords).addTo(mapInstanceRef.current);
+
+    return () => {
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current.remove();
+        mapInstanceRef.current = null;
+      }
+    };
   }, [coords]);
 
   // Use default coords if none set

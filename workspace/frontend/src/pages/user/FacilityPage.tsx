@@ -50,8 +50,14 @@ export function FacilityPage() {
         [nearestFacility.lat, nearestFacility.lng]
       ]);
       mapInstanceRef.current.fitBounds(bounds, { padding: [30, 30] });
-
     }
+
+    return () => {
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current.remove();
+        mapInstanceRef.current = null;
+      }
+    };
   }, [nearestFacility, currentLocation]);
 
   const handleRequestPickup = async () => {

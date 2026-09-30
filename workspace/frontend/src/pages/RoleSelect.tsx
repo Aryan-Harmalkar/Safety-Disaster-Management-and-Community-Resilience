@@ -1,11 +1,14 @@
 import { useNavigate } from 'react-router-dom';
 import { Recycle, User, Truck } from 'lucide-react';
+import { useAppContext } from '../context/AppContext';
 
 export function RoleSelect() {
   const navigate = useNavigate();
+  const { setRole } = useAppContext();
 
   const handleRoleSelect = (role: 'user' | 'collector') => {
     localStorage.setItem('cleanconnect_role', role); // Optional persistence
+    setRole(role);
     navigate(`/${role}`);
   };
 

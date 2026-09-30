@@ -72,7 +72,13 @@ export function CollectorDashboard() {
       mapInstanceRef.current.fitBounds(bounds, { padding: [20, 20], maxZoom: 14 });
     }
 
-  }, [activePickups.length, assignedComplaints.length]);
+    return () => {
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current.remove();
+        mapInstanceRef.current = null;
+      }
+    };
+  }, [activePickups, assignedComplaints]);
 
   const handleAdvancePickup = async (id: string, currentStatus: string) => {
     if (currentStatus === 'Collected') return;
