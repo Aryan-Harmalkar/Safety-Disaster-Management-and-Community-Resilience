@@ -9,13 +9,7 @@ export interface GoaFacility {
 }
 
 export const GOA_FACILITIES: GoaFacility[] = [
-  {
-    name: 'Saligao Integrated Solid Waste Management Facility',
-    lat: 15.5482,
-    lng: 73.782,
-    type: 'Recycling Plant',
-    categories: ['Wet', 'Dry', 'Recyclable-Plastic', 'Recyclable-Paper', 'Recyclable-Metal', 'Recyclable-Glass'],
-  },
+  // Panaji
   {
     name: 'Panaji City Material Recovery & Composting Center',
     lat: 15.494,
@@ -24,9 +18,114 @@ export const GOA_FACILITIES: GoaFacility[] = [
     categories: ['Wet', 'Dry', 'Recyclable-Plastic', 'Recyclable-Paper', 'Recyclable-Metal', 'Recyclable-Glass'],
   },
   {
-    name: 'Cacora Integrated Waste Management Plant',
-    lat: 15.2655,
-    lng: 74.1284,
+    name: 'Panaji Central E-Waste & Electronics Depot',
+    lat: 15.4909,
+    lng: 73.8278,
+    type: 'E-Waste Center',
+    categories: ['E-Waste', 'Hazardous'],
+  },
+
+  // Margao / Salcete (South Goa)
+  {
+    name: 'Margao Green Recycling Facility',
+    lat: 15.2736,
+    lng: 73.958,
+    type: 'Recycling Plant',
+    categories: ['Wet', 'Dry', 'Recyclable-Plastic', 'Recyclable-Paper', 'Recyclable-Metal', 'Recyclable-Glass'],
+  },
+  {
+    name: 'Margao Municipal E-Waste & Electronics Depot',
+    lat: 15.2832,
+    lng: 73.9856,
+    type: 'E-Waste Center',
+    categories: ['E-Waste', 'Hazardous'],
+  },
+
+  // Mapusa / Bardez (North Goa)
+  {
+    name: 'Mapusa Municipal Waste Recovery Center',
+    lat: 15.595,
+    lng: 73.813,
+    type: 'Recycling Plant',
+    categories: ['Wet', 'Dry', 'Recyclable-Plastic', 'Recyclable-Paper', 'Recyclable-Metal', 'Recyclable-Glass'],
+  },
+  {
+    name: 'Mapusa Sub-district E-Waste Hub',
+    lat: 15.5937,
+    lng: 73.8105,
+    type: 'E-Waste Center',
+    categories: ['E-Waste', 'Hazardous'],
+  },
+
+  // Calangute / Saligao Coastal Belt
+  {
+    name: 'Saligao Integrated Solid Waste Management Facility',
+    lat: 15.5482,
+    lng: 73.782,
+    type: 'Recycling Plant',
+    categories: ['Wet', 'Dry', 'Recyclable-Plastic', 'Recyclable-Paper', 'Recyclable-Metal', 'Recyclable-Glass'],
+  },
+  {
+    name: 'Calangute Coastal E-Waste Disposal Point',
+    lat: 15.5439,
+    lng: 73.7553,
+    type: 'E-Waste Center',
+    categories: ['E-Waste', 'Hazardous'],
+  },
+
+  // Vasco da Gama / Mormugao
+  {
+    name: 'Vasco Green Recycling & Metal Salvage Plant',
+    lat: 15.3995,
+    lng: 73.8122,
+    type: 'Recycling Plant',
+    categories: ['Recyclable-Metal', 'Recyclable-Glass', 'Recyclable-Plastic', 'Dry', 'Wet'],
+  },
+  {
+    name: 'Vasco Port E-Waste Collection Station',
+    lat: 15.3973,
+    lng: 73.8113,
+    type: 'E-Waste Center',
+    categories: ['E-Waste', 'Hazardous'],
+  },
+
+  // Ponda
+  {
+    name: 'Ponda Composting & Recycling Plant',
+    lat: 15.402,
+    lng: 74.014,
+    type: 'Recycling Plant',
+    categories: ['Wet', 'Dry', 'Recyclable-Plastic', 'Recyclable-Paper', 'Recyclable-Metal'],
+  },
+  {
+    name: 'Ponda Tech & Hazardous Safe Processing Hub',
+    lat: 15.4011,
+    lng: 74.0156,
+    type: 'E-Waste Center',
+    categories: ['E-Waste', 'Hazardous'],
+  },
+
+  // Porvorim
+  {
+    name: 'Porvorim Eco-Recycling Center',
+    lat: 15.534,
+    lng: 73.832,
+    type: 'Recycling Plant',
+    categories: ['Wet', 'Dry', 'Recyclable-Plastic', 'Recyclable-Paper', 'Recyclable-Metal'],
+  },
+  {
+    name: 'Porvorim E-Waste & Tech Disposal Center',
+    lat: 15.5312,
+    lng: 73.834,
+    type: 'E-Waste Center',
+    categories: ['E-Waste', 'Hazardous'],
+  },
+
+  // Bicholim
+  {
+    name: 'Bicholim Material Recovery Hub',
+    lat: 15.594,
+    lng: 73.952,
     type: 'Recycling Plant',
     categories: ['Wet', 'Dry', 'Recyclable-Plastic', 'Recyclable-Paper', 'Recyclable-Metal'],
   },
@@ -37,26 +136,21 @@ export const GOA_FACILITIES: GoaFacility[] = [
     type: 'E-Waste Center',
     categories: ['E-Waste', 'Hazardous'],
   },
+
+  // Cacora / Quepem
   {
-    name: 'Margao Municipal E-Waste & Electronics Depot',
-    lat: 15.2832,
-    lng: 73.9856,
-    type: 'E-Waste Center',
-    categories: ['E-Waste', 'Hazardous'],
-  },
-  {
-    name: 'Porvorim E-Waste & Tech Disposal Center',
-    lat: 15.5312,
-    lng: 73.834,
-    type: 'E-Waste Center',
-    categories: ['E-Waste', 'Hazardous'],
-  },
-  {
-    name: 'Vasco Green Recycling & Metal Salvage Plant',
-    lat: 15.3995,
-    lng: 73.8122,
+    name: 'Cacora Integrated Waste Management Plant',
+    lat: 15.2655,
+    lng: 74.1284,
     type: 'Recycling Plant',
-    categories: ['Recyclable-Metal', 'Recyclable-Glass', 'Recyclable-Plastic', 'Dry'],
+    categories: ['Wet', 'Dry', 'Recyclable-Plastic', 'Recyclable-Paper', 'Recyclable-Metal'],
+  },
+  {
+    name: 'Cacora E-Waste & Scrap Recovery Depot',
+    lat: 15.268,
+    lng: 74.125,
+    type: 'E-Waste Center',
+    categories: ['E-Waste', 'Hazardous'],
   },
 ];
 

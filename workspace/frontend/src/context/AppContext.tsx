@@ -106,6 +106,7 @@ const LOCAL_STORAGE_KEY_ROLE = 'cleanconnect_role';
 const LOCAL_STORAGE_KEY_USER = 'cleanconnect_user_v1';
 const LOCAL_STORAGE_KEY_COMPLAINTS = 'cleanconnect_complaints_v1';
 const LOCAL_STORAGE_KEY_PICKUPS = 'cleanconnect_pickups_v1';
+const LOCAL_STORAGE_KEY_LOCATION = 'cleanconnect_location_v1';
 
 const DEFAULT_LOCATION: SelectedLocation = {
   lat: 15.4909,
@@ -248,7 +249,29 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const tierInfo = useMemo(() => getTierFromPoints(points), [points]);
 
   // 3. Location state
-  const [selectedLocation, setSelectedLocation] = useState<SelectedLocation>(DEFAULT_LOCATION);
+  const [selectedLocation, setSelectedLocation] = useState<SelectedLocation>(() => {
+    if (typeof window === 'undefined') return DEFAULT_LOCATION;
+    try {
+      const saved = localStorage.getItem(LOCAL_STORAGE_KEY_LOCATION);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (typeof parsed.lat === 'number' && typeof parsed.lng === 'number') {
+          return parsed;
+        }
+      }
+    } catch (err) {
+      console.error('Error loading location from localStorage:', err);
+    }
+    return DEFAULT_LOCATION;
+  });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(LOCAL_STORAGE_KEY_LOCATION, JSON.stringify(selectedLocation));
+    } catch (err) {
+      console.error('Failed to save selected location to localStorage:', err);
+    }
+  }, [selectedLocation]);
 
   // 4. Complaints state
   const [complaints, setComplaints] = useState<ComplaintItem[]>(() => {

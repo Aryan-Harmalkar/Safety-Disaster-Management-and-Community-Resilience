@@ -11,11 +11,41 @@ app.use(express.json());
 // ─── Data & Mocks ──────────────────────────────────────────
 
 const facilities = [
-  { name: 'Panaji Recycling Center', lat: 15.4909, lng: 73.8278, type: 'Recycling Plant' },
-  { name: 'Mapusa E-Waste Hub', lat: 15.5937, lng: 73.8105, type: 'E-Waste Center' },
-  { name: 'Margao Green Recycling', lat: 15.2736, lng: 73.9580, type: 'Recycling Plant' },
-  { name: 'Vasco Dry Waste Mgmt', lat: 15.3973, lng: 73.8113, type: 'Recycling Plant' },
-  { name: 'Ponda Hazardous Tech', lat: 15.4011, lng: 74.0156, type: 'E-Waste Center' }
+  // Panaji
+  { name: 'Panaji Material Recovery & Composting Center', lat: 15.4940, lng: 73.8190, type: 'Recycling Plant' },
+  { name: 'Panaji Central E-Waste & Electronics Depot', lat: 15.4909, lng: 73.8278, type: 'E-Waste Center' },
+
+  // Margao / Salcete (South Goa)
+  { name: 'Margao Green Recycling Facility', lat: 15.2736, lng: 73.9580, type: 'Recycling Plant' },
+  { name: 'Margao Municipal E-Waste & Technology Depot', lat: 15.2832, lng: 73.9856, type: 'E-Waste Center' },
+
+  // Mapusa / Bardez (North Goa)
+  { name: 'Mapusa Municipal Waste Recovery Center', lat: 15.5950, lng: 73.8130, type: 'Recycling Plant' },
+  { name: 'Mapusa Sub-district E-Waste Hub', lat: 15.5937, lng: 73.8105, type: 'E-Waste Center' },
+
+  // Calangute / Saligao Coastal Belt
+  { name: 'Saligao Integrated Solid Waste Management Facility', lat: 15.5482, lng: 73.7820, type: 'Recycling Plant' },
+  { name: 'Calangute Coastal E-Waste Disposal Point', lat: 15.5439, lng: 73.7553, type: 'E-Waste Center' },
+
+  // Vasco da Gama / Mormugao
+  { name: 'Vasco Dry Waste & Metal Salvage Plant', lat: 15.3973, lng: 73.8113, type: 'Recycling Plant' },
+  { name: 'Vasco Port E-Waste Collection Station', lat: 15.3995, lng: 73.8122, type: 'E-Waste Center' },
+
+  // Ponda
+  { name: 'Ponda Composting & Recycling Plant', lat: 15.4020, lng: 74.0140, type: 'Recycling Plant' },
+  { name: 'Ponda Tech & Hazardous Safe Processing Hub', lat: 15.4011, lng: 74.0156, type: 'E-Waste Center' },
+
+  // Porvorim
+  { name: 'Porvorim Eco-Recycling Center', lat: 15.5340, lng: 73.8320, type: 'Recycling Plant' },
+  { name: 'Porvorim E-Waste & Tech Disposal Center', lat: 15.5312, lng: 73.8340, type: 'E-Waste Center' },
+
+  // Bicholim
+  { name: 'Bicholim Material Recovery Hub', lat: 15.5940, lng: 73.9520, type: 'Recycling Plant' },
+  { name: 'Bicholim E-Waste & Hazardous Safe Hub', lat: 15.5925, lng: 73.9540, type: 'E-Waste Center' },
+
+  // Cacora / Quepem
+  { name: 'Cacora Integrated Solid Waste Management Plant', lat: 15.2655, lng: 74.1284, type: 'Recycling Plant' },
+  { name: 'Cacora E-Waste & Scrap Recovery Depot', lat: 15.2680, lng: 74.1250, type: 'E-Waste Center' }
 ];
 
 const teams = [
