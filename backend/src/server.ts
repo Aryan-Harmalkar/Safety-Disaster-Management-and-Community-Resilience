@@ -41,6 +41,13 @@ function haversine(lat1: number, lon1: number, lat2: number, lon2: number) {
   return R * c;
 }
 
+// Helper: Validate coordinates
+function isValidCoord(lat: any, lng: any): boolean {
+  return typeof lat === 'number' && typeof lng === 'number' && 
+         Number.isFinite(lat) && Number.isFinite(lng) && 
+         lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180;
+}
+
 // ─── Endpoints ──────────────────────────────────────────
 
 // 1. Classify
@@ -68,6 +75,10 @@ app.post('/api/classify', (req, res) => {
 app.post('/api/nearest-facility', (req, res) => {
   const { category, lat, lng } = req.body;
   
+  if (!isValidCoord(lat, lng)) {
+    return res.status(400).json({ error: 'Invalid coordinates' });
+  }
+
   const targetType = (category === 'E-Waste' || category === 'Hazardous') 
     ? 'E-Waste Center' 
     : 'Recycling Plant';
@@ -101,6 +112,11 @@ app.post('/api/nearest-facility', (req, res) => {
 // 3. Complaints
 app.post('/api/complaints', (req, res) => {
   const { lat, lng, description, category } = req.body;
+
+  if (!isValidCoord(lat, lng)) {
+    return res.status(400).json({ error: 'Invalid coordinates' });
+  }
+
   const complaint = {
     id: randomUUID(),
     lat,
@@ -132,6 +148,10 @@ app.patch('/api/complaints/:id/advance', (req, res) => {
 // 4. Pickup Requests
 app.post('/api/pickup-requests', (req, res) => {
   const { category, lat, lng } = req.body;
+
+  if (!isValidCoord(lat, lng)) {
+    return res.status(400).json({ error: 'Invalid coordinates' });
+  }
   
   const availableTeams = teams.filter(t => t.status === 'available');
   let nearestTeam = null;
