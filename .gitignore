@@ -37,3 +37,4 @@ backend/dist
 .security_audit/
 .ralph/
 dist/
+tsconfig.tsbuildinfo
