@@ -222,20 +222,29 @@ export function UserDashboard() {
             </p>
           ) : (
             <div className="space-y-2.5">
-              {pointHistory.slice(0, 4).map((event) => (
-                <div
-                  key={event.id}
-                  className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs"
-                >
-                  <div>
-                    <p className="font-semibold text-slate-800 dark:text-slate-200">{event.reason}</p>
-                    <p className="text-[11px] text-slate-500 dark:text-slate-400">{event.timestamp}</p>
+              {pointHistory.slice(0, 4).map((event) => {
+                const isPositive = event.pointsAdded >= 0;
+                return (
+                  <div
+                    key={event.id}
+                    className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs"
+                  >
+                    <div>
+                      <p className="font-semibold text-slate-800 dark:text-slate-200">{event.reason}</p>
+                      <p className="text-[11px] text-slate-500 dark:text-slate-400">{event.timestamp}</p>
+                    </div>
+                    <span
+                      className={`font-mono font-bold px-2 py-1 rounded-lg ${
+                        isPositive
+                          ? 'text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60'
+                          : 'text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/60'
+                      }`}
+                    >
+                      {isPositive ? `+${event.pointsAdded}` : `-${Math.abs(event.pointsAdded)}`} pts
+                    </span>
                   </div>
-                  <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-2 py-1 rounded-lg">
-                    +{event.pointsAdded} pts
-                  </span>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>

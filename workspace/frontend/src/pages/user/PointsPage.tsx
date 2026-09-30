@@ -123,26 +123,29 @@ export function PointsPage() {
             <p className="text-xs text-slate-500 py-6 text-center">No points transactions recorded yet.</p>
           ) : (
             <div className="space-y-2.5 max-h-[300px] overflow-y-auto pr-1">
-              {pointHistory.map((item) => (
-                <div
-                  key={item.id}
-                  className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs"
-                >
-                  <div>
-                    <p className="font-bold text-slate-800 dark:text-slate-200">{item.reason}</p>
-                    <p className="text-[11px] text-slate-500">{item.timestamp}</p>
-                  </div>
-                  <span
-                    className={`font-mono font-black text-xs px-2 py-0.5 rounded-lg ${
-                      item.pointsAdded >= 0
-                        ? 'text-emerald-600 bg-emerald-50 dark:bg-emerald-950/60'
-                        : 'text-rose-600 bg-rose-50 dark:bg-rose-950/60'
-                    }`}
+              {pointHistory.map((item) => {
+                const isPositive = item.pointsAdded >= 0;
+                return (
+                  <div
+                    key={item.id}
+                    className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs"
                   >
-                    {item.pointsAdded >= 0 ? `+${item.pointsAdded}` : item.pointsAdded} pts
-                  </span>
-                </div>
-              ))}
+                    <div>
+                      <p className="font-bold text-slate-800 dark:text-slate-200">{item.reason}</p>
+                      <p className="text-[11px] text-slate-500 dark:text-slate-400">{item.timestamp}</p>
+                    </div>
+                    <span
+                      className={`font-mono font-black text-xs px-2 py-0.5 rounded-lg ${
+                        isPositive
+                          ? 'text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60'
+                          : 'text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/60'
+                      }`}
+                    >
+                      {isPositive ? `+${item.pointsAdded}` : `-${Math.abs(item.pointsAdded)}`} pts
+                    </span>
+                  </div>
+                );
+              })}
             </div>
           )}
         </div>

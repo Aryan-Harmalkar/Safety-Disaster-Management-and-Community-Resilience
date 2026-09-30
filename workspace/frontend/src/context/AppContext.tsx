@@ -107,6 +107,7 @@ const LOCAL_STORAGE_KEY_USER = 'cleanconnect_user_v1';
 const LOCAL_STORAGE_KEY_COMPLAINTS = 'cleanconnect_complaints_v1';
 const LOCAL_STORAGE_KEY_PICKUPS = 'cleanconnect_pickups_v1';
 const LOCAL_STORAGE_KEY_LOCATION = 'cleanconnect_location_v1';
+const LOCAL_STORAGE_KEY_POINT_HISTORY = 'cleanconnect_point_history_v1';
 
 const DEFAULT_LOCATION: SelectedLocation = {
   lat: 15.4909,
@@ -212,15 +213,48 @@ export function AppProvider({ children }: { children: ReactNode }) {
     return 65;
   });
 
-  const [pointHistory, setPointHistory] = useState<PointHistoryItem[]>([
-    {
-      id: 'init-1',
-      reason: 'Welcome Civic Eco Bonus',
-      pointsAdded: 65,
-      points: 65,
-      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-    },
-  ]);
+  const [pointHistory, setPointHistory] = useState<PointHistoryItem[]>(() => {
+    if (typeof window === 'undefined') {
+      return [
+        {
+          id: 'init-1',
+          reason: 'Welcome Civic Eco Bonus',
+          pointsAdded: 65,
+          points: 65,
+          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        },
+      ];
+    }
+    try {
+      const saved = localStorage.getItem(LOCAL_STORAGE_KEY_POINT_HISTORY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed;
+        }
+      }
+    } catch (err) {
+      console.error('Error reading point history from localStorage:', err);
+    }
+    return [
+      {
+        id: 'init-1',
+        reason: 'Welcome Civic Eco Bonus',
+        pointsAdded: 65,
+        points: 65,
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      },
+    ];
+  });
+
+  // Persist point history
+  useEffect(() => {
+    try {
+      localStorage.setItem(LOCAL_STORAGE_KEY_POINT_HISTORY, JSON.stringify(pointHistory));
+    } catch (err) {
+      console.error('Failed to save point history to localStorage:', err);
+    }
+  }, [pointHistory]);
 
   // Persist citizen name and points
   useEffect(() => {

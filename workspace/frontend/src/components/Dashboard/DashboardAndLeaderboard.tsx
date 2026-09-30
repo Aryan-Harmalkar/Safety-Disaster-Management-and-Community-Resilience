@@ -227,16 +227,25 @@ export const DashboardAndLeaderboard: React.FC<DashboardAndLeaderboardProps> = (
                 <span>Recent Point Activity</span>
               </div>
               <div className="space-y-1.5 max-h-28 overflow-y-auto pr-1">
-                {pointHistory.slice(0, 4).map((item) => (
-                  <div key={item.id} className="flex items-center justify-between text-[11px]">
-                    <span className="text-slate-600 dark:text-slate-400 truncate max-w-[200px]">
-                      {item.reason}
-                    </span>
-                    <span className="font-mono font-semibold text-emerald-600 shrink-0">
-                      +{item.pointsAdded}
-                    </span>
-                  </div>
-                ))}
+                {pointHistory.slice(0, 4).map((item) => {
+                  const isPositive = item.pointsAdded >= 0;
+                  return (
+                    <div key={item.id} className="flex items-center justify-between text-[11px]">
+                      <span className="text-slate-600 dark:text-slate-400 truncate max-w-[200px]">
+                        {item.reason}
+                      </span>
+                      <span
+                        className={`font-mono font-semibold shrink-0 ${
+                          isPositive
+                            ? 'text-emerald-600 dark:text-emerald-400'
+                            : 'text-rose-600 dark:text-rose-400'
+                        }`}
+                      >
+                        {isPositive ? `+${item.pointsAdded}` : `-${Math.abs(item.pointsAdded)}`}
+                      </span>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           )}
