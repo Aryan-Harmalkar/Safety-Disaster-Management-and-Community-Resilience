@@ -1,121 +1,121 @@
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Trophy, Users } from 'lucide-react';
-import { useAppContext } from '../../hooks/useCleanConnect';
+import { ArrowLeft, Trophy, Award } from 'lucide-react';
+import { useAppContext } from '../../context/AppContext';
 import { STATIC_LEADERBOARD } from '../../services/mock/cleanconnectData';
-import { LeaderboardEntry } from '../../types/cleanconnect';
+import type { LeaderboardEntry } from '../../types/cleanconnect';
 
 export function LeaderboardPage() {
   const navigate = useNavigate();
-  const { state } = useAppContext();
+  const { citizenName, points, tierInfo } = useAppContext();
 
   const fullLeaderboard = useMemo(() => {
-    const currentUserEntry: LeaderboardEntry & { rank?: number } = {
+    const currentUserEntry: LeaderboardEntry & { calculatedRank?: number } = {
       id: 'current-user',
-      name: 'You',
-      points: state.points,
-      tier: state.tier,
-      tierBadge: state.tierBadge,
-      ward: 'Current Ward',
-      rank: 0
+      name: `${citizenName} (You)`,
+      points,
+      ward: 'Panaji Central (Your Ward)',
+      tier: tierInfo.tier,
+      tierBadge: tierInfo.tierBadge,
     };
 
     const combined = [...STATIC_LEADERBOARD, currentUserEntry];
     combined.sort((a, b) => b.points - a.points);
-    
-    // Assign ranks
+
     return combined.map((entry, index) => ({
       ...entry,
-      rank: index + 1
+      calculatedRank: index + 1,
     }));
-  }, [state.points, state.tier, state.tierBadge]);
-
-  const getRankBadge = (rank: number) => {
-    switch (rank) {
-      case 1: return <span className="text-2xl" title="1st Place">🥇</span>;
-      case 2: return <span className="text-2xl" title="2nd Place">🥈</span>;
-      case 3: return <span className="text-2xl" title="3rd Place">🥉</span>;
-      default: return <span className="text-gray-500 font-bold px-2">{rank}</span>;
-    }
-  };
-
-  const getTierBadge = (tier: string) => {
-    switch (tier) {
-      case 'Bronze': return '🥉';
-      case 'Silver': return '🥈';
-      case 'Gold': return '🥇';
-      case 'Platinum': return '💎';
-      default: return '🥉';
-    }
-  };
+  }, [citizenName, points, tierInfo]);
 
   return (
-    <main className="min-h-screen bg-gray-50 dark:bg-gray-900 pb-20">
-      <header className="bg-emerald-600 dark:bg-emerald-800 text-white shadow-sm p-4 flex items-center relative z-10">
-        <button onClick={() => navigate(-1)} className="p-2 mr-2 rounded-full hover:bg-emerald-700 dark:hover:bg-emerald-900">
-          <ArrowLeft className="h-6 w-6" />
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex items-center gap-3">
+        <button
+          type="button"
+          onClick={() => navigate(-1)}
+          aria-label="Back"
+          className="p-2 rounded-xl border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 transition-colors cursor-pointer"
+        >
+          <ArrowLeft className="w-5 h-5" />
         </button>
-        <h1 className="text-xl font-bold flex-1">Leaderboard</h1>
-      </header>
-
-      {/* Decorative top section */}
-      <div className="bg-emerald-600 dark:bg-emerald-800 pt-6 pb-12 px-6 rounded-b-3xl shadow-md text-center text-white relative z-0 -mt-1">
-        <Trophy className="h-16 w-16 mx-auto mb-2 text-yellow-300 drop-shadow-md" />
-        <h2 className="text-2xl font-bold">Top Eco-Warriors</h2>
-        <p className="text-emerald-100 flex items-center justify-center gap-2 mt-1">
-          <Users className="h-4 w-4" />
-          {fullLeaderboard.length} Citizens Participating
-        </p>
-      </div>
-
-      <div className="px-4 max-w-lg mx-auto -mt-8 relative z-10">
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden border border-gray-100 dark:border-gray-700">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="bg-gray-50 dark:bg-gray-900 text-gray-500 dark:text-gray-400 text-xs uppercase tracking-wider">
-                  <th className="p-4 font-semibold w-16 text-center">Rank</th>
-                  <th className="p-4 font-semibold">Citizen</th>
-                  <th className="p-4 font-semibold text-right">Points</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
-                {fullLeaderboard.map((entry) => {
-                  const isCurrentUser = entry.id === 'current-user';
-                  
-                  return (
-                    <tr 
-                      key={entry.id} 
-                      className={`transition-colors ${isCurrentUser ? 'bg-emerald-50 dark:bg-emerald-900/20' : 'hover:bg-gray-50 dark:hover:bg-gray-750'}`}
-                    >
-                      <td className="p-4 text-center align-middle">
-                        {getRankBadge(entry.rank || 0)}
-                      </td>
-                      <td className="p-4">
-                        <div className="flex items-center gap-2">
-                          <span className="text-lg" title={`${entry.tier} Tier`}>{getTierBadge(entry.tier)}</span>
-                          <div>
-                            <p className={`font-bold ${isCurrentUser ? 'text-emerald-700 dark:text-emerald-400' : 'text-gray-800 dark:text-gray-200'}`}>
-                              {entry.name}
-                            </p>
-                            <p className="text-xs text-gray-500 dark:text-gray-400">{entry.ward}</p>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="p-4 text-right">
-                        <span className={`font-bold ${isCurrentUser ? 'text-emerald-600 dark:text-emerald-400' : 'text-gray-700 dark:text-gray-300'}`}>
-                          {entry.points}
-                        </span>
-                        <span className="text-xs text-gray-400 ml-1">pts</span>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+        <div>
+          <h1 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <Trophy className="w-5 h-5 text-amber-500" />
+            <span>Goa Community Eco Leaderboard</span>
+          </h1>
+          <p className="text-xs text-slate-500 dark:text-slate-400">
+            Rankings of citizens actively segregating, reporting, and recycling waste across Goa
+          </p>
         </div>
       </div>
-    </main>
+
+      {/* Leaderboard Table Container */}
+      <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+        <div className="p-4 sm:p-5 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50 dark:bg-slate-800/60">
+          <div className="flex items-center gap-2">
+            <Award className="w-4 h-4 text-emerald-600" />
+            <span className="text-xs font-bold text-slate-900 dark:text-white">
+              Official Goa Civic Rankings
+            </span>
+          </div>
+          <span className="text-xs text-slate-500">12 Sample Citizens + You</span>
+        </div>
+
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-xs" aria-label="Goa Citizen Eco Leaderboard">
+            <thead className="bg-slate-50/70 dark:bg-slate-800/40 text-slate-600 dark:text-slate-300 font-bold border-b border-slate-200 dark:border-slate-800">
+              <tr>
+                <th scope="col" className="py-3 px-4 w-14 text-center">Rank</th>
+                <th scope="col" className="py-3 px-4">Citizen</th>
+                <th scope="col" className="py-3 px-4">Ward / Village</th>
+                <th scope="col" className="py-3 px-4 text-center">Tier</th>
+                <th scope="col" className="py-3 px-4 text-right">Eco Points</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+              {fullLeaderboard.map((row) => {
+                const isYou = row.id === 'current-user';
+                return (
+                  <tr
+                    key={row.id}
+                    className={`transition-colors ${
+                      isYou
+                        ? 'bg-emerald-50/80 dark:bg-emerald-950/40 font-bold border-l-4 border-l-emerald-600'
+                        : 'hover:bg-slate-50/60 dark:hover:bg-slate-800/40'
+                    }`}
+                  >
+                    <td className="py-3 px-4 text-center font-mono font-bold text-sm">
+                      {row.calculatedRank === 1
+                        ? '🥇'
+                        : row.calculatedRank === 2
+                        ? '🥈'
+                        : row.calculatedRank === 3
+                        ? '🥉'
+                        : `#${row.calculatedRank}`}
+                    </td>
+                    <td className="py-3 px-4">
+                      <span className={isYou ? 'text-emerald-700 dark:text-emerald-300 font-bold' : 'text-slate-800 dark:text-slate-200'}>
+                        {row.name}
+                      </span>
+                    </td>
+                    <td className="py-3 px-4 text-slate-500 dark:text-slate-400">
+                      {row.ward}
+                    </td>
+                    <td className="py-3 px-4 text-center text-sm" title={row.tier}>
+                      {row.tierBadge}
+                    </td>
+                    <td className="py-3 px-4 text-right font-mono font-black text-slate-900 dark:text-white">
+                      {row.points}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
   );
 }

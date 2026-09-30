@@ -102,6 +102,14 @@ function AppRoutes() {
             </ProtectedRoute>
           }
         />
+        <Route
+          path="/user/redemption"
+          element={
+            <ProtectedRoute>
+              <PageLayout><RedemptionPage /></PageLayout>
+            </ProtectedRoute>
+          }
+        />
 
         {/* Collector routes */}
         <Route

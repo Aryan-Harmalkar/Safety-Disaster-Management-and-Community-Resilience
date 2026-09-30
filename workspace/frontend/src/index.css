@@ -1,6 +1,8 @@
 @import "leaflet/dist/leaflet.css";
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 :root {
   --color-bg-base: #f8fafc;
   --color-bg-surface: #ffffff;

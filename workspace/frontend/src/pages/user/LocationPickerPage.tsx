@@ -2,168 +2,288 @@ import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { ArrowLeft, MapPin, Navigation, Crosshair } from 'lucide-react';
-import { useAppContext } from '../../hooks/useCleanConnect';
+import {
+  ArrowLeft,
+  MapPin,
+  Crosshair,
+  Check,
+  Compass,
+  AlertCircle,
+  Sparkles,
+} from 'lucide-react';
+import { useAppContext } from '../../context/AppContext';
 
-// Fix for default marker icon in Leaflet with webpack/vite
-delete (L.Icon.Default.prototype as any)._getIconUrl;
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
-  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
-  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
-});
-
-const GOA_CENTER: [number, number] = [15.4909, 73.8278]; // Panaji
-
-const TOWNS = [
-  { name: 'Panaji', coords: [15.4909, 73.8278] as [number, number] },
-  { name: 'Margao', coords: [15.2736, 73.9581] as [number, number] },
-  { name: 'Mapusa', coords: [15.5937, 73.8105] as [number, number] },
-  { name: 'Calangute', coords: [15.5494, 73.7626] as [number, number] },
-  { name: 'Vasco', coords: [15.3981, 73.8111] as [number, number] },
+// Goa Town Presets
+const GOA_TOWNS = [
+  { name: 'Panaji (Capital)', coords: [15.4909, 73.8278] as [number, number] },
+  { name: 'Margao (South)', coords: [15.2832, 73.9856] as [number, number] },
+  { name: 'Mapusa (North)', coords: [15.5937, 73.8142] as [number, number] },
+  { name: 'Calangute (Coast)', coords: [15.5439, 73.7553] as [number, number] },
+  { name: 'Vasco da Gama', coords: [15.3995, 73.8122] as [number, number] },
+  { name: 'Porvorim', coords: [15.5312, 73.834] as [number, number] },
+  { name: 'Ponda', coords: [15.4011, 74.0156] as [number, number] },
 ];
 
+function resolveGoaName(lat: number, lng: number): string {
+  const landmarks = [
+    { name: 'Panaji / Miramar Coast, Goa', lat: 15.4909, lng: 73.8278 },
+    { name: 'Campal Municipal Area, Panaji', lat: 15.494, lng: 73.819 },
+    { name: 'Porvorim Highway Corridor', lat: 15.5312, lng: 73.834 },
+    { name: 'Calangute Beach Belt, North Goa', lat: 15.5439, lng: 73.7553 },
+    { name: 'Mapusa Town Center', lat: 15.5937, lng: 73.8142 },
+    { name: 'Margao Municipal Area, South Goa', lat: 15.2832, lng: 73.9856 },
+    { name: 'Vasco Port Zone, Goa', lat: 15.3995, lng: 73.8122 },
+    { name: 'Ponda Sub-district', lat: 15.4011, lng: 74.0156 },
+  ];
+
+  let closest = landmarks[0];
+  let minDiff = Infinity;
+  for (const lm of landmarks) {
+    const diff = Math.hypot(lm.lat - lat, lm.lng - lng);
+    if (diff < minDiff) {
+      minDiff = diff;
+      closest = lm;
+    }
+  }
+  return closest.name;
+}
+
 export function LocationPickerPage() {
+  const navigate = useNavigate();
+  const { selectedLocation, setSelectedLocation, announce } = useAppContext();
+
+  const [coords, setCoords] = useState<[number, number]>([
+    selectedLocation.lat || 15.4909,
+    selectedLocation.lng || 73.8278,
+  ]);
+  const [locationLabel, setLocationLabel] = useState<string>(
+    selectedLocation.label || 'Panaji, Goa'
+  );
+  const [isLocating, setIsLocating] = useState(false);
+  const [geoError, setGeoError] = useState<string | null>(null);
+
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
   const markerRef = useRef<L.Marker | null>(null);
-  const navigate = useNavigate();
-  const { state, setLocation } = useAppContext();
 
-  const [coords, setCoords] = useState<[number, number]>(
-    state.currentLocation ? [state.currentLocation.latitude, state.currentLocation.longitude] : GOA_CENTER
-  );
-  const [isLocating, setIsLocating] = useState(false);
-
+  // Initialize Map
   useEffect(() => {
-    if (!mapRef.current) return;
+    if (!mapRef.current || mapInstanceRef.current) return;
 
-    // Initialize map
-    if (!mapInstanceRef.current) {
-      mapInstanceRef.current = L.map(mapRef.current).setView(coords, 13);
-      
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; OpenStreetMap contributors'
-      }).addTo(mapInstanceRef.current);
+    const map = L.map(mapRef.current, {
+      center: coords,
+      zoom: 13,
+      zoomControl: true,
+    });
 
-      markerRef.current = L.marker(coords, { draggable: true }).addTo(mapInstanceRef.current);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap contributors',
+    }).addTo(map);
 
-      // Handle map click
-      mapInstanceRef.current.on('click', (e: L.LeafletMouseEvent) => {
-        const newCoords: [number, number] = [e.latlng.lat, e.latlng.lng];
-        setCoords(newCoords);
-        if (markerRef.current) {
-          markerRef.current.setLatLng(newCoords);
-        }
-      });
+    // Custom Draggable Pin
+    const pinIcon = L.divIcon({
+      className: 'custom-map-pin',
+      html: `
+        <div style="position:relative; display:flex; align-items:center; justify-content:center;">
+          <div style="position:absolute; width:38px; height:38px; border-radius:50%; background:rgba(16,185,129,0.3); animation:pulse 1.8s infinite;"></div>
+          <div style="width:28px; height:28px; border-radius:50%; background:#059669; border:3px solid #ffffff; box-shadow:0 3px 8px rgba(0,0,0,0.35); display:flex; align-items:center; justify-content:center; color:#fff; font-size:14px; font-weight:bold;">
+            📍
+          </div>
+        </div>
+      `,
+      iconSize: [38, 38],
+      iconAnchor: [19, 19],
+    });
 
-      // Handle marker drag
-      markerRef.current.on('dragend', () => {
-        if (markerRef.current) {
-          const pos = markerRef.current.getLatLng();
-          setCoords([pos.lat, pos.lng]);
-        }
-      });
-    }
+    const marker = L.marker(coords, { draggable: true, icon: pinIcon }).addTo(map);
+    markerRef.current = marker;
+    mapInstanceRef.current = map;
+
+    const updatePin = (lat: number, lng: number) => {
+      const roundedLat = Math.round(lat * 10000) / 10000;
+      const roundedLng = Math.round(lng * 10000) / 10000;
+      const newCoords: [number, number] = [roundedLat, roundedLng];
+      setCoords(newCoords);
+      const name = resolveGoaName(roundedLat, roundedLng);
+      setLocationLabel(`${name} (${roundedLat}, ${roundedLng})`);
+      if (markerRef.current) {
+        markerRef.current.setLatLng(newCoords);
+      }
+    };
+
+    map.on('click', (e: L.LeafletMouseEvent) => {
+      updatePin(e.latlng.lat, e.latlng.lng);
+    });
+
+    marker.on('dragend', () => {
+      const pos = marker.getLatLng();
+      updatePin(pos.lat, pos.lng);
+    });
 
     return () => {
-      if (mapInstanceRef.current) {
-        mapInstanceRef.current.remove();
-        mapInstanceRef.current = null;
-      }
+      map.remove();
+      mapInstanceRef.current = null;
     };
   }, []);
 
-  const flyTo = (newCoords: [number, number]) => {
+  const jumpToTown = (newCoords: [number, number], townName: string) => {
     setCoords(newCoords);
+    setLocationLabel(`${townName}, Goa`);
+    setGeoError(null);
     if (mapInstanceRef.current && markerRef.current) {
-      mapInstanceRef.current.flyTo(newCoords, 14);
+      mapInstanceRef.current.flyTo(newCoords, 14, { duration: 1.2 });
       markerRef.current.setLatLng(newCoords);
     }
   };
 
   const useLiveLocation = () => {
     if (!navigator.geolocation) {
-      alert("Geolocation is not supported by your browser");
+      setGeoError('Geolocation is not supported by your browser.');
       return;
     }
 
     setIsLocating(true);
+    setGeoError(null);
+
     navigator.geolocation.getCurrentPosition(
-      (position) => {
+      (pos) => {
         setIsLocating(false);
-        flyTo([position.coords.latitude, position.coords.longitude]);
+        const lat = Math.round(pos.coords.latitude * 10000) / 10000;
+        const lng = Math.round(pos.coords.longitude * 10000) / 10000;
+        const newCoords: [number, number] = [lat, lng];
+        setCoords(newCoords);
+        const label = `Live GPS (${lat}, ${lng})`;
+        setLocationLabel(label);
+        if (mapInstanceRef.current && markerRef.current) {
+          mapInstanceRef.current.flyTo(newCoords, 15, { duration: 1.2 });
+          markerRef.current.setLatLng(newCoords);
+        }
+        announce(`Live GPS acquired: Latitude ${lat}, Longitude ${lng}`);
       },
-      (error) => {
+      (err) => {
         setIsLocating(false);
-        console.error("Error getting location:", error);
-        alert("Unable to retrieve your location. Please check permissions.");
+        setGeoError(
+          err.code === 1
+            ? 'Location permission denied. Click anywhere on the map to place the pin manually.'
+            : 'Live GPS signal timed out. Switched to Panaji, Goa coordinates.'
+        );
       },
-      { enableHighAccuracy: true }
+      { enableHighAccuracy: true, timeout: 8000 }
     );
   };
 
-  const confirmLocation = () => {
-    setLocation(coords[0], coords[1]);
+  const handleConfirmLocation = () => {
+    setSelectedLocation({
+      lat: coords[0],
+      lng: coords[1],
+      label: locationLabel,
+    });
+    announce(`Location confirmed: ${locationLabel}`);
     navigate(-1);
   };
 
   return (
-    <div className="flex flex-col h-screen bg-gray-50 dark:bg-gray-900">
-      <header className="bg-white dark:bg-gray-800 shadow-sm p-4 flex items-center z-10 relative">
-        <button onClick={() => navigate(-1)} className="p-2 mr-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300">
-          <ArrowLeft className="h-6 w-6" />
-        </button>
-        <h1 className="text-xl font-bold text-gray-800 dark:text-white flex-1">Pin Location</h1>
-      </header>
-
-      <div className="bg-white dark:bg-gray-800 p-3 shadow-sm z-10 relative">
-        <div className="flex space-x-2 overflow-x-auto pb-2 scrollbar-hide">
+    <div className="space-y-4">
+      {/* Top Breadcrumb & Title */}
+      <div className="flex flex-wrap items-center justify-between gap-3 bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+        <div className="flex items-center gap-3">
           <button
-            onClick={useLiveLocation}
-            disabled={isLocating}
-            className="flex-shrink-0 flex items-center space-x-1 px-3 py-1.5 bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 rounded-full text-sm font-medium"
+            type="button"
+            onClick={() => navigate(-1)}
+            aria-label="Back"
+            className="p-2 rounded-xl border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 transition-colors cursor-pointer"
           >
-            <Crosshair className={`h-4 w-4 ${isLocating ? 'animate-spin' : ''}`} />
-            <span>{isLocating ? 'Locating...' : 'Live Location'}</span>
+            <ArrowLeft className="w-5 h-5" />
           </button>
-          
-          {TOWNS.map(town => (
-            <button
-              key={town.name}
-              onClick={() => flyTo(town.coords)}
-              className="flex-shrink-0 px-3 py-1.5 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-full text-sm font-medium hover:bg-gray-200 dark:hover:bg-gray-600"
-            >
-              {town.name}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <div className="flex-1 relative">
-        <div ref={mapRef} className="absolute inset-0 z-0"></div>
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-10 pointer-events-none hidden">
-          {/* Fallback visual pin if marker logic fails */}
-          <MapPin className="h-8 w-8 text-red-500 drop-shadow-md pb-4" />
-        </div>
-      </div>
-
-      <div className="bg-white dark:bg-gray-800 p-6 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] z-10 relative">
-        <div className="mb-4">
-          <p className="text-sm text-gray-500 dark:text-gray-400 font-medium mb-1">Selected Coordinates</p>
-          <div className="flex items-center space-x-2 bg-gray-50 dark:bg-gray-900 p-3 rounded-lg border border-gray-100 dark:border-gray-700">
-            <Navigation className="h-5 w-5 text-emerald-500" />
-            <span className="font-mono text-sm text-gray-800 dark:text-gray-200">
-              {coords[0].toFixed(5)}, {coords[1].toFixed(5)}
-            </span>
+          <div>
+            <h1 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+              <Compass className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+              <span>Pinpoint Waste Location on Map</span>
+            </h1>
+            <p className="text-xs text-slate-500 dark:text-slate-400">
+              Click anywhere on the map or drag the pin to set the exact incident or recycling spot in Goa
+            </p>
           </div>
         </div>
-        
+
+        {/* Live GPS button */}
         <button
-          onClick={confirmLocation}
-          className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3.5 px-4 rounded-xl shadow-md transition-colors focus:ring-4 focus:ring-emerald-300"
+          type="button"
+          onClick={useLiveLocation}
+          disabled={isLocating}
+          className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white text-xs font-bold transition-all shadow-sm cursor-pointer disabled:opacity-50"
         >
-          Confirm Location
+          <Crosshair className={`w-4 h-4 ${isLocating ? 'animate-spin' : ''}`} />
+          <span>{isLocating ? 'Locating...' : 'Use My Live GPS'}</span>
+        </button>
+      </div>
+
+      {/* Quick Town Jumps */}
+      <div className="bg-white dark:bg-slate-900 p-3 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center gap-2 overflow-x-auto">
+        <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 shrink-0">
+          Goa Town Jump:
+        </span>
+        {GOA_TOWNS.map((t) => (
+          <button
+            key={t.name}
+            type="button"
+            onClick={() => jumpToTown(t.coords, t.name)}
+            className="px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 hover:text-emerald-600 dark:hover:text-emerald-400 border border-slate-200 dark:border-slate-700 text-xs font-medium text-slate-700 dark:text-slate-300 shrink-0 transition-colors cursor-pointer"
+          >
+            {t.name}
+          </button>
+        ))}
+      </div>
+
+      {geoError && (
+        <div
+          role="alert"
+          className="p-3 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-xs text-amber-800 dark:text-amber-200 flex items-center gap-2"
+        >
+          <AlertCircle className="w-4 h-4 shrink-0 text-amber-600" />
+          <span>{geoError}</span>
+        </div>
+      )}
+
+      {/* Full Interactive Leaflet Map Canvas */}
+      <div className="relative w-full h-[450px] sm:h-[500px] rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-800 shadow-sm">
+        <div ref={mapRef} className="w-full h-full" />
+
+        {/* Floating Instructions */}
+        <div className="absolute top-3 left-3 z-[400] bg-white/95 dark:bg-slate-900/95 backdrop-blur-md p-2.5 rounded-xl shadow-md border border-slate-200 dark:border-slate-800 text-xs max-w-xs pointer-events-none">
+          <p className="font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+            <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
+            <span>Interactive Drop-Pin</span>
+          </p>
+          <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+            Click anywhere on the map or drag the green pin to position the incident.
+          </p>
+        </div>
+      </div>
+
+      {/* Confirmation & Coordinate Readout Bar */}
+      <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider block">
+            Selected Spot Details
+          </span>
+          <div className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-1.5 mt-0.5">
+            <MapPin className="w-4 h-4 text-emerald-600" />
+            <span>{locationLabel}</span>
+          </div>
+          <div className="text-xs font-mono text-slate-600 dark:text-slate-400 mt-0.5">
+            Latitude: <strong className="text-slate-800 dark:text-slate-200">{coords[0].toFixed(5)}° N</strong> • Longitude:{' '}
+            <strong className="text-slate-800 dark:text-slate-200">{coords[1].toFixed(5)}° E</strong>
+          </div>
+        </div>
+
+        <button
+          type="button"
+          onClick={handleConfirmLocation}
+          className="flex items-center justify-center gap-2 py-3 px-6 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white text-sm font-bold shadow-md transition-all cursor-pointer"
+        >
+          <Check className="w-4 h-4" />
+          <span>Confirm This Location</span>
         </button>
       </div>
     </div>

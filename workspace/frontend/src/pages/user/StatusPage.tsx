@@ -1,219 +1,344 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Clock, CheckCircle2, AlertCircle, Truck, FileText } from 'lucide-react';
-import { useAppContext } from '../../hooks/useCleanConnect';
+import { useNavigate, Link } from 'react-router-dom';
+import {
+  ArrowLeft,
+  CheckCircle2,
+  Truck,
+  FileText,
+  ChevronRight,
+  RefreshCw,
+  MapPin,
+} from 'lucide-react';
+import { useAppContext } from '../../context/AppContext';
 import * as api from '../../services/cleanconnectApi';
+import type { ComplaintStatus, PickupStatus } from '../../types/cleanconnect';
 
 export function StatusPage() {
   const navigate = useNavigate();
-  const { state, setComplaints, setPickupRequests, addPoints } = useAppContext();
-  const [activeTab, setActiveTab] = useState<'complaints' | 'pickups'>('complaints');
+  const {
+    complaints,
+    setComplaints,
+    pickupRequests,
+    setPickupRequests,
+    addPoints,
+    announce,
+  } = useAppContext();
 
-  const handleAdvanceComplaint = async (id: string, currentStatus: string) => {
+  const [activeTab, setActiveTab] = useState<'complaints' | 'pickups'>('complaints');
+  const [loadingId, setLoadingId] = useState<string | null>(null);
+
+  const handleAdvanceComplaint = async (id: string, currentStatus: ComplaintStatus) => {
     if (currentStatus === 'Resolved') return;
+    setLoadingId(id);
     try {
       const updated = await api.advanceComplaintStatus(id);
-      setComplaints(prev => prev.map(c => 
-        c.id === id ? { ...c, status: updated.status } : c
-      ));
-      
+      setComplaints((prev) =>
+        prev.map((c) => (c.id === id ? { ...c, status: updated.status } : c))
+      );
+
       if (updated.status === 'Resolved') {
-        addPoints(25, 'Complaint resolved');
+        addPoints(25, `Complaint #${id} resolved & verified (+25 pts)`);
+        announce(`Complaint #${id} is now Resolved! 25 civic eco-points awarded.`);
+      } else {
+        announce(`Complaint #${id} advanced to ${updated.status}.`);
       }
     } catch (error) {
-      console.error("Failed to advance complaint status:", error);
+      console.error('Failed to advance complaint status:', error);
+    } finally {
+      setLoadingId(null);
     }
   };
 
-  const handleAdvancePickup = async (id: string, currentStatus: string) => {
+  const handleAdvancePickup = async (id: string, currentStatus: PickupStatus) => {
     if (currentStatus === 'Collected') return;
+    setLoadingId(id);
     try {
       const updated = await api.advancePickupStatus(id);
-      setPickupRequests(prev => prev.map(p => 
-        p.id === id ? { ...p, status: updated.status } : p
-      ));
-      
+      setPickupRequests((prev) =>
+        prev.map((p) => (p.id === id ? { ...p, status: updated.status } : p))
+      );
+
       if (updated.status === 'Collected') {
-        addPoints(20, 'Waste collected');
+        addPoints(20, `Pickup #${id} collected & recycled (+20 pts)`);
+        announce(`Pickup #${id} collected! 20 civic eco-points awarded.`);
+      } else {
+        announce(`Pickup #${id} advanced to ${updated.status}.`);
       }
     } catch (error) {
-      console.error("Failed to advance pickup status:", error);
+      console.error('Failed to advance pickup status:', error);
+    } finally {
+      setLoadingId(null);
     }
   };
 
-  const ComplaintItem = ({ complaint }: { complaint: any }) => {
-    const steps = ['Reported', 'Assigned', 'Resolved'];
-    const currentStepIndex = steps.indexOf(complaint.status);
-
-    return (
-      <div className="bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 mb-4">
-        <div className="flex justify-between items-start mb-3">
-          <div>
-            <span className="inline-block bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 text-xs font-bold px-2 py-1 rounded mb-2">
-              ID: {complaint.id.substring(0, 8)}
-            </span>
-            <h3 className="font-semibold text-gray-800 dark:text-white capitalize">{complaint.category} Waste</h3>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 line-clamp-2">{complaint.description}</p>
-          </div>
-          <div className={`p-2 rounded-full ${
-            complaint.status === 'Resolved' ? 'bg-green-100 text-green-600' : 
-            complaint.status === 'Assigned' ? 'bg-amber-100 text-amber-600' : 'bg-red-100 text-red-600'
-          }`}>
-            {complaint.status === 'Resolved' ? <CheckCircle2 className="h-5 w-5" /> : 
-             complaint.status === 'Assigned' ? <Clock className="h-5 w-5" /> : <AlertCircle className="h-5 w-5" />}
-          </div>
-        </div>
-
-        {/* Progress Bar */}
-        <div className="mt-4 relative">
-          <div className="absolute top-1/2 left-0 w-full h-1 bg-gray-200 dark:bg-gray-700 -translate-y-1/2 z-0 rounded"></div>
-          <div className="absolute top-1/2 left-0 h-1 bg-emerald-500 -translate-y-1/2 z-0 rounded transition-all duration-500" 
-               style={{ width: `${(Math.max(0, currentStepIndex) / (steps.length - 1)) * 100}%` }}></div>
-          
-          <div className="relative z-10 flex justify-between">
-            {steps.map((step, idx) => (
-              <div key={step} className="flex flex-col items-center">
-                <div className={`w-4 h-4 rounded-full border-2 ${
-                  idx <= currentStepIndex 
-                    ? 'bg-emerald-500 border-emerald-500' 
-                    : 'bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600'
-                }`}></div>
-                <span className={`text-[10px] uppercase font-bold mt-1 ${
-                  idx <= currentStepIndex ? 'text-emerald-600 dark:text-emerald-400' : 'text-gray-400'
-                }`}>{step}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {complaint.status !== 'Resolved' && (
-          <button 
-            onClick={() => handleAdvanceComplaint(complaint.id, complaint.status)}
-            className="mt-4 w-full py-2 bg-gray-50 dark:bg-gray-700/50 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200 text-sm font-medium rounded-lg transition-colors border border-gray-200 dark:border-gray-600"
-          >
-            [Demo] Advance Status
-          </button>
-        )}
-      </div>
-    );
-  };
-
-  const PickupItem = ({ pickup }: { pickup: any }) => {
-    const steps = ['Requested', 'Assigned', 'En Route', 'Collected'];
-    const currentStepIndex = steps.indexOf(pickup.status);
-
-    return (
-      <div className="bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 mb-4">
-        <div className="flex justify-between items-start mb-3">
-          <div>
-            <span className="inline-block bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-xs font-bold px-2 py-1 rounded mb-2">
-              PICKUP ID: {pickup.id.substring(0, 8)}
-            </span>
-            <h3 className="font-semibold text-gray-800 dark:text-white capitalize">Team: {pickup.team_name}</h3>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Requested: {new Date(pickup.created_at || new Date()).toLocaleDateString()}</p>
-          </div>
-          <div className="p-2 rounded-full bg-blue-100 text-blue-600 dark:bg-blue-900/50 dark:text-blue-400">
-            <Truck className="h-5 w-5" />
-          </div>
-        </div>
-
-        {/* Progress Bar */}
-        <div className="mt-4 relative">
-          <div className="absolute top-1/2 left-0 w-full h-1 bg-gray-200 dark:bg-gray-700 -translate-y-1/2 z-0 rounded"></div>
-          <div className="absolute top-1/2 left-0 h-1 bg-blue-500 -translate-y-1/2 z-0 rounded transition-all duration-500" 
-               style={{ width: `${(Math.max(0, currentStepIndex) / (steps.length - 1)) * 100}%` }}></div>
-          
-          <div className="relative z-10 flex justify-between">
-            {steps.map((step, idx) => (
-              <div key={step} className="flex flex-col items-center">
-                <div className={`w-4 h-4 rounded-full border-2 ${
-                  idx <= currentStepIndex 
-                    ? 'bg-blue-500 border-blue-500' 
-                    : 'bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600'
-                }`}></div>
-                <span className={`text-[10px] uppercase font-bold mt-1 ${
-                  idx <= currentStepIndex ? 'text-blue-600 dark:text-blue-400' : 'text-gray-400'
-                }`}>{step}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {pickup.status !== 'Collected' && (
-          <button 
-            onClick={() => handleAdvancePickup(pickup.id, pickup.status)}
-            className="mt-4 w-full py-2 bg-gray-50 dark:bg-gray-700/50 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200 text-sm font-medium rounded-lg transition-colors border border-gray-200 dark:border-gray-600"
-          >
-            [Demo] Advance Status
-          </button>
-        )}
-      </div>
-    );
-  };
+  const complaintSteps: ComplaintStatus[] = ['Reported', 'Assigned', 'Resolved'];
+  const pickupSteps: PickupStatus[] = ['Requested', 'Assigned', 'En Route', 'Collected'];
 
   return (
-    <main className="min-h-screen bg-gray-50 dark:bg-gray-900 pb-20">
-      <header className="bg-white dark:bg-gray-800 shadow-sm p-4 flex items-center">
-        <button onClick={() => navigate(-1)} className="p-2 mr-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700">
-          <ArrowLeft className="h-6 w-6 text-gray-600 dark:text-gray-300" />
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex items-center gap-3">
+        <button
+          type="button"
+          onClick={() => navigate(-1)}
+          aria-label="Back"
+          className="p-2 rounded-xl border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 transition-colors cursor-pointer"
+        >
+          <ArrowLeft className="w-5 h-5" />
         </button>
-        <h1 className="text-xl font-bold text-gray-800 dark:text-white">Track Status</h1>
-      </header>
-
-      <div className="p-4 max-w-lg mx-auto">
-        <div className="flex p-1 bg-gray-200 dark:bg-gray-800 rounded-xl mb-6">
-          <button
-            onClick={() => setActiveTab('complaints')}
-            className={`flex-1 py-2 text-sm font-semibold rounded-lg flex justify-center items-center gap-2 transition-colors ${
-              activeTab === 'complaints' 
-                ? 'bg-white dark:bg-gray-700 text-gray-800 dark:text-white shadow-sm' 
-                : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
-            }`}
-          >
-            <FileText className="h-4 w-4" />
-            My Complaints
-          </button>
-          <button
-            onClick={() => setActiveTab('pickups')}
-            className={`flex-1 py-2 text-sm font-semibold rounded-lg flex justify-center items-center gap-2 transition-colors ${
-              activeTab === 'pickups' 
-                ? 'bg-white dark:bg-gray-700 text-gray-800 dark:text-white shadow-sm' 
-                : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
-            }`}
-          >
-            <Truck className="h-4 w-4" />
-            My Pickups
-          </button>
+        <div>
+          <h1 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <RefreshCw className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+            <span>Civic Tracking &amp; Status Simulation</span>
+          </h1>
+          <p className="text-xs text-slate-500 dark:text-slate-400">
+            Monitor real-time progress of your filed complaints and scheduled waste collections
+          </p>
         </div>
-
-        {activeTab === 'complaints' ? (
-          <div>
-            {state.complaints.length === 0 ? (
-              <div className="text-center py-10 bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700">
-                <FileText className="h-12 w-12 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
-                <p className="text-gray-500 dark:text-gray-400 font-medium">No complaints filed yet.</p>
-              </div>
-            ) : (
-              state.complaints.map(complaint => (
-                <ComplaintItem key={complaint.id} complaint={complaint} />
-              ))
-            )}
-          </div>
-        ) : (
-          <div>
-            {state.pickupRequests.length === 0 ? (
-              <div className="text-center py-10 bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700">
-                <Truck className="h-12 w-12 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
-                <p className="text-gray-500 dark:text-gray-400 font-medium">No pickup requests yet.</p>
-              </div>
-            ) : (
-              state.pickupRequests.map(pickup => (
-                <PickupItem key={pickup.id} pickup={pickup} />
-              ))
-            )}
-          </div>
-        )}
       </div>
-    </main>
+
+      {/* Tabs */}
+      <div className="flex p-1 bg-slate-100 dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 max-w-md">
+        <button
+          type="button"
+          onClick={() => setActiveTab('complaints')}
+          className={`flex-1 py-2 px-3 text-xs font-bold rounded-xl flex items-center justify-center gap-2 transition-all cursor-pointer ${
+            activeTab === 'complaints'
+              ? 'bg-white dark:bg-slate-900 text-emerald-600 dark:text-emerald-400 shadow-sm'
+              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+          }`}
+        >
+          <FileText className="w-4 h-4" />
+          <span>Complaints ({complaints.length})</span>
+        </button>
+        <button
+          type="button"
+          onClick={() => setActiveTab('pickups')}
+          className={`flex-1 py-2 px-3 text-xs font-bold rounded-xl flex items-center justify-center gap-2 transition-all cursor-pointer ${
+            activeTab === 'pickups'
+              ? 'bg-white dark:bg-slate-900 text-blue-600 dark:text-blue-400 shadow-sm'
+              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+          }`}
+        >
+          <Truck className="w-4 h-4" />
+          <span>Pickups ({pickupRequests.length})</span>
+        </button>
+      </div>
+
+      {/* Content */}
+      {activeTab === 'complaints' ? (
+        <div className="space-y-4">
+          {complaints.length === 0 ? (
+            <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 p-8 text-center space-y-3">
+              <FileText className="w-10 h-10 text-slate-400 mx-auto" />
+              <p className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+                No complaints registered yet
+              </p>
+              <Link
+                to="/user/complaint"
+                className="inline-block py-2 px-4 rounded-xl bg-emerald-600 text-white font-bold text-xs"
+              >
+                File Your First Complaint
+              </Link>
+            </div>
+          ) : (
+            complaints.map((c) => {
+              const currentIdx = complaintSteps.indexOf(c.status);
+              const isResolved = c.status === 'Resolved';
+              const isLoading = loadingId === c.id;
+
+              return (
+                <div
+                  key={c.id}
+                  className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm space-y-4"
+                >
+                  <div className="flex flex-wrap items-start justify-between gap-2">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono text-xs font-bold text-slate-900 dark:text-white">
+                          #{c.id}
+                        </span>
+                        <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
+                          {c.category ?? 'Unclassified'}
+                        </span>
+                        {isResolved && (
+                          <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 flex items-center gap-1">
+                            <CheckCircle2 className="w-3 h-3" /> Resolved (+25 pts)
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-xs text-slate-700 dark:text-slate-300 mt-2 font-medium">
+                        {c.description}
+                      </p>
+                      <p className="text-[11px] text-slate-400 mt-1 flex items-center gap-1 font-mono">
+                        <MapPin className="w-3 h-3 text-slate-400" />
+                        {c.lat?.toFixed(4)}, {c.lng?.toFixed(4)}
+                      </p>
+                    </div>
+
+                    <button
+                      type="button"
+                      disabled={isResolved || isLoading}
+                      onClick={() => handleAdvanceComplaint(c.id, c.status)}
+                      className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+                        isResolved
+                          ? 'bg-slate-100 dark:bg-slate-800 text-slate-400 cursor-not-allowed'
+                          : 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm'
+                      }`}
+                    >
+                      {isLoading ? (
+                        <>
+                          <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                          <span>Advancing...</span>
+                        </>
+                      ) : isResolved ? (
+                        <span>Resolved</span>
+                      ) : (
+                        <>
+                          <span>Advance Status</span>
+                          <ChevronRight className="w-4 h-4" />
+                        </>
+                      )}
+                    </button>
+                  </div>
+
+                  {/* Step Track */}
+                  <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center gap-2 text-xs">
+                    {complaintSteps.map((stg, i) => {
+                      const isDone = i <= currentIdx;
+                      const isCurrent = i === currentIdx;
+                      return (
+                        <div key={stg} className="flex items-center gap-2">
+                          <span
+                            className={`px-2.5 py-1 rounded-lg text-xs font-semibold ${
+                              isCurrent
+                                ? 'bg-emerald-600 text-white font-bold shadow-sm'
+                                : isDone
+                                ? 'bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300'
+                                : 'bg-slate-100 dark:bg-slate-800 text-slate-400'
+                            }`}
+                          >
+                            {stg}
+                          </span>
+                          {i < complaintSteps.length - 1 && (
+                            <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })
+          )}
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {pickupRequests.length === 0 ? (
+            <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 p-8 text-center space-y-3">
+              <Truck className="w-10 h-10 text-slate-400 mx-auto" />
+              <p className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+                No pickup requests scheduled
+              </p>
+              <Link
+                to="/user/facility"
+                className="inline-block py-2 px-4 rounded-xl bg-blue-600 text-white font-bold text-xs"
+              >
+                Schedule Doorstep Pickup
+              </Link>
+            </div>
+          ) : (
+            pickupRequests.map((p) => {
+              const currentIdx = pickupSteps.indexOf(p.status);
+              const isCollected = p.status === 'Collected';
+              const isLoading = loadingId === p.id;
+
+              return (
+                <div
+                  key={p.id}
+                  className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm space-y-4"
+                >
+                  <div className="flex flex-wrap items-start justify-between gap-2">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono text-xs font-bold text-slate-900 dark:text-white">
+                          #{p.id}
+                        </span>
+                        <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-950 text-blue-800 dark:text-blue-300">
+                          {p.category}
+                        </span>
+                        {isCollected && (
+                          <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 flex items-center gap-1">
+                            <CheckCircle2 className="w-3 h-3" /> Collected (+20 pts)
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-xs text-slate-700 dark:text-slate-300 mt-2 font-medium">
+                        Assigned Vehicle: <strong className="text-blue-600 dark:text-blue-400">{p.team_name}</strong>
+                      </p>
+                      <p className="text-[11px] text-slate-400 mt-1 flex items-center gap-1 font-mono">
+                        <MapPin className="w-3 h-3 text-slate-400" />
+                        {p.lat?.toFixed(4)}, {p.lng?.toFixed(4)}
+                      </p>
+                    </div>
+
+                    <button
+                      type="button"
+                      disabled={isCollected || isLoading}
+                      onClick={() => handleAdvancePickup(p.id, p.status)}
+                      className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+                        isCollected
+                          ? 'bg-slate-100 dark:bg-slate-800 text-slate-400 cursor-not-allowed'
+                          : 'bg-blue-600 hover:bg-blue-700 text-white shadow-sm'
+                      }`}
+                    >
+                      {isLoading ? (
+                        <>
+                          <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                          <span>Advancing...</span>
+                        </>
+                      ) : isCollected ? (
+                        <span>Collected</span>
+                      ) : (
+                        <>
+                          <span>Advance Pickup</span>
+                          <ChevronRight className="w-4 h-4" />
+                        </>
+                      )}
+                    </button>
+                  </div>
+
+                  {/* Step Track */}
+                  <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center gap-2 text-xs flex-wrap">
+                    {pickupSteps.map((stg, i) => {
+                      const isDone = i <= currentIdx;
+                      const isCurrent = i === currentIdx;
+                      return (
+                        <div key={stg} className="flex items-center gap-2">
+                          <span
+                            className={`px-2.5 py-1 rounded-lg text-xs font-semibold ${
+                              isCurrent
+                                ? 'bg-blue-600 text-white font-bold shadow-sm'
+                                : isDone
+                                ? 'bg-blue-100 dark:bg-blue-950 text-blue-800 dark:text-blue-300'
+                                : 'bg-slate-100 dark:bg-slate-800 text-slate-400'
+                            }`}
+                          >
+                            {stg}
+                          </span>
+                          {i < pickupSteps.length - 1 && (
+                            <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })
+          )}
+        </div>
+      )}
+    </div>
   );
 }
