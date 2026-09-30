@@ -1,14 +1,16 @@
-# Safety, Disaster Management & Community Resilience
+# Waste Management
 
-Hackathon project — local-only web application.
+**Hackathon project — local-only prototype.**
 
-## Stack
+| | |
+|---|---|
+| **Topic** | Waste Management |
+| **Mode** | Local only — no cloud services |
+| **Frontend** | React 19 · Vite 6 · TypeScript · Tailwind CSS 4 |
+| **Backend** | Node.js · Express (optional local server) |
+| **Data** | Mock JSON → local DB if needed |
 
-| Layer     | Technology                        |
-|-----------|-----------------------------------|
-| Frontend  | React 19 · Vite 6 · TypeScript · Tailwind CSS 4 |
-| Backend   | Node.js · Express (local only)    |
-| Data      | Mock JSON → SQLite (if needed)    |
+---
 
 ## Architecture
 
@@ -16,81 +18,74 @@ Hackathon project — local-only web application.
 React + Vite + TypeScript + Tailwind
               │
               ▼
-      src/services/api.ts
+    workspace/frontend/src/services/api.ts
               │
               ▼
-    Local backend (Express)
-    backend/src/server.ts  :3001
+    Local Express backend  :3001
               │
               ▼
-  backend/data/mock/  (JSON files)
+    workspace/backend/data/mock/  (JSON files)
 ```
+
+The backend is **optional** — the frontend uses mock data from
+`workspace/frontend/src/services/mock/` until a real backend is needed.
+
+---
+
+## Workspace
+
+```
+workspace/
+├── frontend/   ← React app (feat/frontend branch)
+└── backend/    ← Express API (feat/backend branch)
+```
+
+---
 
 ## Quick Start
 
 ### Frontend
 
 ```bash
-cp .env.example .env.local
+cd workspace/frontend
+cp ../../.env.example .env.local
 npm install
 npm run dev
 ```
 
-Frontend runs at **http://localhost:5173**
+Frontend → **http://localhost:5173**
 
-### Backend (optional — only if needed)
+### Backend (optional)
 
 ```bash
-cd backend
+cd workspace/backend
 npm install
 npm run dev
 ```
 
-Backend runs at **http://localhost:3001**
+Backend → **http://localhost:3001**
 
-## Project Structure
-
-```
-├── src/                    # Frontend source
-│   ├── app/                # App bootstrap & routing
-│   ├── components/         # Reusable UI components
-│   │   ├── ui/             # Generic primitives
-│   │   └── shared/         # App-wide shared components
-│   ├── features/           # Feature-specific modules
-│   ├── hooks/              # Custom React hooks
-│   ├── pages/              # Page-level components (add as needed)
-│   ├── services/           # API client boundary (src/services/api.ts)
-│   ├── types/              # Shared TypeScript types
-│   └── utils/              # Pure utility functions
-│
-├── backend/                # Optional local backend
-│   ├── src/
-│   │   ├── routes/         # Express route handlers
-│   │   ├── services/       # Business logic
-│   │   ├── models/         # Type definitions
-│   │   └── server.ts       # Entry point
-│   └── data/mock/          # Mock JSON data files
-│
-├── docs/                   # Project documentation
-└── .env.example            # Environment variable template
-```
+---
 
 ## Branches
 
-| Branch          | Owner              |
-|-----------------|--------------------|
-| `main`          | Integration branch |
+| Branch | Owner |
+|---|---|
+| `main` | Integration |
 | `feat/frontend` | Frontend developer |
-| `feat/backend`  | Backend developer  |
+| `feat/backend` | Backend developer |
+
+---
 
 ## Documentation
 
-See the `docs/` folder:
+See [`docs/`](docs/):
 
-- [`REQUIREMENTS.md`](docs/REQUIREMENTS.md)
-- [`ARCHITECTURE.md`](docs/ARCHITECTURE.md)
-- [`DATA_MODEL.md`](docs/DATA_MODEL.md)
-- [`API_CONTRACT.md`](docs/API_CONTRACT.md)
-- [`UI_FLOW.md`](docs/UI_FLOW.md)
-- [`TASKS.md`](docs/TASKS.md)
-- [`DEMO.md`](docs/DEMO.md)
+- [REQUIREMENTS.md](docs/REQUIREMENTS.md) — problem statement & requirements
+- [ARCHITECTURE.md](docs/ARCHITECTURE.md) — system design decisions
+- [DATA_MODEL.md](docs/DATA_MODEL.md) — data entities & schema
+- [API_CONTRACT.md](docs/API_CONTRACT.md) — frontend↔backend API contract
+- [UI_FLOW.md](docs/UI_FLOW.md) — user journeys & page flows
+- [DECISIONS.md](docs/DECISIONS.md) — architecture decision log
+- [TASKS.md](docs/TASKS.md) — sprint tasks & milestones
+- [DEMO.md](docs/DEMO.md) — demo script & submission notes

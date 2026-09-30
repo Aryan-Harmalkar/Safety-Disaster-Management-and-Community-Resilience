@@ -1,10 +1,21 @@
-# Tasks & Milestone Tracking
+# Tasks
 
-Placeholder for sprint, feature, and task tracking between team members.
+Track work here as requirements are decided.
 
-## Contents to be documented:
-- Frontend Track Tasks (`feat/frontend`)
-- Backend Track Tasks (`feat/backend`)
-- Shared Integration Milestones
-- Backlog & Nice-to-Have Features
-- Completed Deliverables
+## Frontend (`feat/frontend`)
+
+- [ ] Decide feature list with team
+- [ ] Design page layouts / UI flow
+- [ ] Implement pages once requirements are confirmed
+
+## Backend (`feat/backend`)
+
+- [ ] Confirm whether a backend is needed
+- [ ] Define API endpoints once frontend requirements are known
+- [ ] Implement routes + services
+
+## Integration (`main`)
+
+- [ ] Connect frontend services to real backend
+- [ ] End-to-end demo run
+- [ ] Prepare demo script (see DEMO.md)
