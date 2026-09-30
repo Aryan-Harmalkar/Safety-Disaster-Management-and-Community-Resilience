@@ -1,1 +1,55 @@
+@import "leaflet/dist/leaflet.css";
 @import "tailwindcss";
+
+:root {
+  --color-bg-base: #f8fafc;
+  --color-bg-surface: #ffffff;
+  --color-bg-subtle: #f1f5f9;
+  --color-text-main: #0f172a;
+  --color-text-muted: #64748b;
+  --color-border: #e2e8f0;
+  --color-primary: #059669;
+  --color-primary-hover: #047857;
+  --color-accent-blue: #0284c7;
+}
+
+.dark {
+  --color-bg-base: #0b1120;
+  --color-bg-surface: #151f32;
+  --color-bg-subtle: #1e293b;
+  --color-text-main: #f8fafc;
+  --color-text-muted: #94a3b8;
+  --color-border: #283548;
+  --color-primary: #10b981;
+  --color-primary-hover: #34d399;
+  --color-accent-blue: #38bdf8;
+}
+
+body {
+  background-color: var(--color-bg-base);
+  color: var(--color-text-main);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+}
+
+/* Accessible focus ring */
+:focus-visible {
+  outline: 3px solid #10b981;
+  outline-offset: 2px;
+}
+
+/* Leaflet map styles */
+.leaflet-container {
+  width: 100%;
+  height: 100%;
+  border-radius: 0.75rem;
+  z-index: 10;
+}
+
+.custom-map-pin {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

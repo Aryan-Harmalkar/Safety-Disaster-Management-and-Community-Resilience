@@ -43,3 +43,5 @@ export interface WasteItem extends BaseEntity {
   // e.g. category, location, status, reportedBy, ...
   [key: string]: unknown;
 }
+
+export * from './cleanconnect';
