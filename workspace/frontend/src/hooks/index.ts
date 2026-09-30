@@ -7,4 +7,5 @@
  *   useLocalStorage()   — generic local storage hook
  */
 
-export {};
+export * from './useCleanConnect';
+export { useAppContext } from '../context/AppContext';
