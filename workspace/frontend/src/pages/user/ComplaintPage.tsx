@@ -15,9 +15,7 @@ export function ComplaintPage() {
   const [description, setDescription] = useState(routerState?.prefillDescription || '');
   const [photoUrl, setPhotoUrl] = useState<string | null>(routerState?.photoUrl || null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [classificationResult, setClassificationResult] = useState<{category: string, confidence: number} | null>(
-    routerState?.category ? { category: routerState.category, confidence: 0.95 } : null
-  );
+  const [classificationResult, setClassificationResult] = useState<{category: string, confidence: number} | null>(null);
   const [success, setSuccess] = useState(false);
 
   const mapRef = useRef<HTMLDivElement>(null);
@@ -86,9 +84,10 @@ export function ComplaintPage() {
     try {
       // 1. AI Classification
       const classification = await api.classifyWaste(description, photoUrl ? 'uploaded_photo.jpg' : null);
+      const chosenCategory = (routerState?.category || classification.category) as any;
       setClassificationResult({
-        category: classification.category,
-        confidence: classification.confidence
+        category: chosenCategory,
+        confidence: classification.confidence,
       });
 
       // 2. Create Complaint
@@ -96,7 +95,7 @@ export function ComplaintPage() {
         coords[0],
         coords[1],
         description,
-        classification.category as any
+        chosenCategory
       );
 
       const newComplaint = {
@@ -104,10 +103,10 @@ export function ComplaintPage() {
         lat: coords[0],
         lng: coords[1],
         description,
-        category: classification.category as any,
+        category: chosenCategory,
         status: res.status,
         created_at: res.created_at,
-        photoPreviewUrl: photoUrl || undefined
+        photoPreviewUrl: photoUrl || undefined,
       };
       addComplaint(newComplaint);
 
@@ -118,7 +117,7 @@ export function ComplaintPage() {
       }
 
       // 4. Find Nearest Facility
-      const nearest = await api.getNearestFacility(classification.category as any, coords[0], coords[1]);
+      const nearest = await api.getNearestFacility(chosenCategory, coords[0], coords[1]);
       setNearestFacility(nearest);
 
       setSuccess(true);

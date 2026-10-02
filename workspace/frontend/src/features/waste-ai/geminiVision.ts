@@ -1,17 +1,28 @@
-import type { WasteItem, DetectionResult } from "./types";
+import type { WasteItem, DetectionResult, WasteCategory } from "./types";
 
 const MODEL = "gemini-2.5-flash";
+
+const VALID_CATEGORIES: WasteCategory[] = [
+  "Plastic",
+  "Metal",
+  "Glass",
+  "Paper",
+  "Electronic",
+  "Hazardous",
+  "Organic",
+  "Other",
+];
 
 const PROMPT = `You are a waste-sorting vision system. Detect every distinct waste item visible in the image.
 
 For each item, return an object with exactly these fields:
-- box_2d: [ymin, xmin, ymax, xmax], normalized 0-1000 (NOT pixel coordinates)
+- box_2d: [ymin, xmin, ymax, xmax], normalized 0-1000 (NOT pixel coordinates). Draw box around the whole item.
 - label: short item name (e.g. "plastic bottle", "tin can")
 - category: one of "Plastic","Metal","Glass","Paper","Electronic","Hazardous","Organic","Other"
 - confidence: number 0-1, your certainty in this classification
 - is_contaminated: true if the item shows grease, food residue, liquid, or mixed material that would cause a recycling facility to reject it
 - contaminant_type: short description if contaminated (e.g. "grease", "liquid pooling"), else null
-- reason: one sentence justifying the contamination call
+- reason: one sentence describing distinguishing visual details (color, texture, label, residue) and why it is or isn't contaminated/recyclable
 - disposal_stream: the correct bin/stream for this item given its category and contamination state (e.g. "recycling - plastics", "hazardous waste - do not recycle", "general waste - contaminated")
 
 Return ONLY a JSON array of these objects. No markdown fences, no prose, no explanation outside the array.`;
@@ -66,6 +77,65 @@ function cleanJsonText(rawText: string): string {
   return cleaned;
 }
 
+/** Validates and sanitizes raw model output into type-safe WasteItem */
+function sanitizeWasteItem(raw: unknown): WasteItem | null {
+  if (!raw || typeof raw !== "object") return null;
+  const item = raw as Record<string, unknown>;
+
+  // box_2d must be an array of 4 finite numbers
+  if (
+    !Array.isArray(item.box_2d) ||
+    item.box_2d.length !== 4 ||
+    !item.box_2d.every((n) => typeof n === "number" && Number.isFinite(n))
+  ) {
+    return null;
+  }
+
+  const category: WasteCategory =
+    typeof item.category === "string" &&
+    VALID_CATEGORIES.includes(item.category as WasteCategory)
+      ? (item.category as WasteCategory)
+      : "Other";
+
+  const confidence =
+    typeof item.confidence === "number" && Number.isFinite(item.confidence)
+      ? Math.max(0, Math.min(1, item.confidence))
+      : 0.85;
+
+  const rawYmin = Math.max(0, Math.min(1000, Number(item.box_2d[0])));
+  const rawXmin = Math.max(0, Math.min(1000, Number(item.box_2d[1])));
+  const rawYmax = Math.max(0, Math.min(1000, Number(item.box_2d[2])));
+  const rawXmax = Math.max(0, Math.min(1000, Number(item.box_2d[3])));
+
+  return {
+    box_2d: [
+      Math.min(rawYmin, rawYmax),
+      Math.min(rawXmin, rawXmax),
+      Math.max(rawYmin, rawYmax),
+      Math.max(rawXmin, rawXmax),
+    ],
+    label:
+      typeof item.label === "string" && item.label.trim()
+        ? item.label.trim()
+        : "waste item",
+    category,
+    confidence,
+    is_contaminated: Boolean(item.is_contaminated),
+    contaminant_type:
+      typeof item.contaminant_type === "string" && item.contaminant_type.trim()
+        ? item.contaminant_type.trim()
+        : null,
+    reason:
+      typeof item.reason === "string" && item.reason.trim()
+        ? item.reason.trim()
+        : "Material classification based on visual attributes.",
+    disposal_stream:
+      typeof item.disposal_stream === "string" && item.disposal_stream.trim()
+        ? item.disposal_stream.trim()
+        : "Municipal Waste Collection",
+  };
+}
+
 export async function detectWaste(
   base64Image: string,
   mimeType: string,
@@ -79,13 +149,13 @@ export async function detectWaste(
     );
   }
 
-  const apiPath = `/v1beta/models/${MODEL}:generateContent?key=${apiKey}`;
+  // Pass API key securely via x-goog-api-key header instead of query parameters (CWE-598 mitigation)
+  const apiPath = `/v1beta/models/${MODEL}:generateContent`;
   const isLocalhost =
     typeof window !== "undefined" &&
     (window.location.hostname === "localhost" ||
       window.location.hostname === "127.0.0.1");
 
-  // Primary endpoint: uses Vite proxy (/gemini-api) to prevent browser CORS and adblocker issues
   const primaryEndpoint = isLocalhost
     ? `/gemini-api${apiPath}`
     : `https://generativelanguage.googleapis.com${apiPath}`;
@@ -112,19 +182,23 @@ export async function detectWaste(
     },
   };
 
+  const headers = {
+    "Content-Type": "application/json",
+    "x-goog-api-key": apiKey,
+  };
+
   let res: Response;
   try {
     res = await fetch(primaryEndpoint, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers,
       body: JSON.stringify(payload),
     });
 
-    // If local proxy was not found (404), fall back to direct Google endpoint
     if (res.status === 404 && primaryEndpoint !== directEndpoint) {
       res = await fetch(directEndpoint, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers,
         body: JSON.stringify(payload),
       });
     }
@@ -133,12 +207,12 @@ export async function detectWaste(
       try {
         res = await fetch(directEndpoint, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers,
           body: JSON.stringify(payload),
         });
       } catch {
         throw new Error(
-          `Network connection error: Unable to reach Gemini API. Please check your browser connection (${netErr?.message || "fetch failed"}).`
+          `Network connection error: Unable to reach Gemini API (${netErr?.message || "fetch failed"}).`
         );
       }
     } else {
@@ -178,9 +252,13 @@ export async function detectWaste(
     throw new Error("Gemini response was not valid JSON:\n" + text);
   }
 
-  const items: WasteItem[] = Array.isArray(parsed)
-    ? (parsed as WasteItem[])
-    : ((parsed as { items?: WasteItem[] })?.items ?? []);
+  const rawList: unknown[] = Array.isArray(parsed)
+    ? (parsed as unknown[])
+    : ((parsed as { items?: unknown[] })?.items ?? []);
+
+  const items: WasteItem[] = rawList
+    .map(sanitizeWasteItem)
+    .filter((item): item is WasteItem => item !== null);
 
   return {
     items,

@@ -86,8 +86,8 @@ export default function WasteDetector({
 
   async function handleFile(file: File) {
     try {
-      const base64 = await fileToBase64(file);
-      await processImage(base64, file.type || "image/jpeg");
+      const { dataUrl, mimeType } = await fileToBase64(file);
+      await processImage(dataUrl, mimeType);
     } catch {
       setError("Failed to read image file");
       setStatus("error");
