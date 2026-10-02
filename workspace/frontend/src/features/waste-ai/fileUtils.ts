@@ -3,10 +3,42 @@ export interface ProcessedImage {
   mimeType: string;
 }
 
+const ALLOWED_MIME_TYPES = new Set([
+  "image/jpeg",
+  "image/jpg",
+  "image/png",
+  "image/webp",
+  "image/heic",
+  "image/heif",
+]);
+
+/**
+ * Converts a data URL to an Object URL (blob:) to avoid bloating history/router state.
+ */
+export function dataUrlToBlobUrl(dataUrl: string): string {
+  try {
+    const parts = dataUrl.split(",");
+    if (parts.length < 2) return dataUrl;
+    const mimeMatch = parts[0].match(/:(.*?);/);
+    const mime = mimeMatch ? mimeMatch[1] : "image/jpeg";
+    const bstr = atob(parts[1]);
+    let n = bstr.length;
+    const u8arr = new Uint8Array(n);
+    while (n--) {
+      u8arr[n] = bstr.charCodeAt(n);
+    }
+    const blob = new Blob([u8arr], { type: mime });
+    return URL.createObjectURL(blob);
+  } catch {
+    return dataUrl;
+  }
+}
+
 /**
  * Reads and optimizes an image file into a Base64 Data URL and corresponding MIME type.
  * Automatically resizes large images to max 1280px to avoid browser
  * NetworkError / payload size limits when calling vision APIs.
+ * Explicitly rejects non-image or unsupported formats (SVGs, PDFs, binaries).
  */
 export function fileToBase64(
   file: File,
@@ -14,14 +46,17 @@ export function fileToBase64(
   quality = 0.88
 ): Promise<ProcessedImage> {
   return new Promise((resolve, reject) => {
-    // If SVG or not an image, read directly with original type
-    if (file.type === "image/svg+xml" || !file.type.startsWith("image/")) {
-      const reader = new FileReader();
-      reader.onload = () =>
-        resolve({ dataUrl: reader.result as string, mimeType: file.type || "application/octet-stream" });
-      reader.onerror = () => reject(new Error("Failed to read file"));
-      reader.readAsDataURL(file);
-      return;
+    if (!file || !file.type) {
+      return reject(new Error("Invalid file provided."));
+    }
+
+    const lowerType = file.type.toLowerCase();
+    if (lowerType === "image/svg+xml" || !ALLOWED_MIME_TYPES.has(lowerType)) {
+      return reject(
+        new Error(
+          `Unsupported file format "${file.type}". Please upload a JPEG, PNG, WebP, or HEIC photo.`
+        )
+      );
     }
 
     const reader = new FileReader();
@@ -68,7 +103,7 @@ export function fileToBase64(
         resolve({ dataUrl: optimizedDataUrl, mimeType: "image/jpeg" });
       };
 
-      img.onerror = () => resolve({ dataUrl: rawDataUrl, mimeType: file.type || "image/jpeg" });
+      img.onerror = () => reject(new Error("Failed to decode image file."));
       img.src = rawDataUrl;
     };
 

@@ -14,48 +14,54 @@ export function ComplaintPage() {
 
   const [description, setDescription] = useState(routerState?.prefillDescription || '');
   const [photoUrl, setPhotoUrl] = useState<string | null>(routerState?.photoUrl || null);
+  const [prefilledCategory, setPrefilledCategory] = useState<string | undefined>(routerState?.category);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [classificationResult, setClassificationResult] = useState<{category: string, confidence: number} | null>(null);
   const [success, setSuccess] = useState(false);
 
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
+  const markerRef = useRef<L.Marker | null>(null);
 
   const lat = state.currentLocation?.latitude ?? 15.4909;
   const lng = state.currentLocation?.longitude ?? 73.8278;
   const coords = useMemo<[number, number]>(() => [lat, lng], [lat, lng]);
 
-  // Initialize mini-map
+  // Mount/unmount mini-map once
   useEffect(() => {
-    if (!mapRef.current) return;
+    if (!mapRef.current || mapInstanceRef.current) return;
 
-    if (!mapInstanceRef.current) {
-      mapInstanceRef.current = L.map(mapRef.current, {
-        zoomControl: false,
-        dragging: false,
-        scrollWheelZoom: false,
-        doubleClickZoom: false
-      }).setView(coords, 14);
+    const map = L.map(mapRef.current, {
+      zoomControl: false,
+      dragging: false,
+      scrollWheelZoom: false,
+      doubleClickZoom: false
+    }).setView(coords, 14);
 
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(mapInstanceRef.current);
-    } else {
-      mapInstanceRef.current.setView(coords, 14);
-    }
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+    mapInstanceRef.current = map;
 
-    // Clear and re-add marker
-    mapInstanceRef.current.eachLayer((layer) => {
-      if (layer instanceof L.Marker) {
-        mapInstanceRef.current?.removeLayer(layer);
-      }
-    });
-    L.marker(coords).addTo(mapInstanceRef.current);
+    const marker = L.marker(coords).addTo(map);
+    markerRef.current = marker;
 
     return () => {
       if (mapInstanceRef.current) {
         mapInstanceRef.current.remove();
         mapInstanceRef.current = null;
+        markerRef.current = null;
       }
     };
+  }, []);
+
+  // Update map center and marker when coords change
+  useEffect(() => {
+    if (!mapInstanceRef.current) return;
+    mapInstanceRef.current.setView(coords, 14);
+    if (markerRef.current) {
+      markerRef.current.setLatLng(coords);
+    } else {
+      markerRef.current = L.marker(coords).addTo(mapInstanceRef.current);
+    }
   }, [coords]);
 
   // Use default coords if none set
@@ -84,7 +90,7 @@ export function ComplaintPage() {
     try {
       // 1. AI Classification
       const classification = await api.classifyWaste(description, photoUrl ? 'uploaded_photo.jpg' : null);
-      const chosenCategory = (routerState?.category || classification.category) as any;
+      const chosenCategory = (prefilledCategory || classification.category) as any;
       setClassificationResult({
         category: chosenCategory,
         confidence: classification.confidence,
@@ -243,7 +249,12 @@ export function ComplaintPage() {
           <h2 className="text-gray-800 dark:text-white font-semibold mb-3">Description</h2>
           <textarea
             value={description}
-            onChange={(e) => setDescription(e.target.value)}
+            onChange={(e) => {
+              setDescription(e.target.value);
+              if (prefilledCategory && e.target.value !== routerState?.prefillDescription) {
+                setPrefilledCategory(undefined);
+              }
+            }}
             placeholder="E.g., Large pile of plastic bottles near the beach entrance..."
             className="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl p-3 text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-emerald-500 outline-none resize-none min-h-[120px]"
             required

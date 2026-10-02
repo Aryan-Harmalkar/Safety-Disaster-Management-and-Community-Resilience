@@ -13,7 +13,7 @@ import {
   ShieldAlert,
 } from "lucide-react";
 import { detectWaste, getActiveApiKey, setActiveApiKey } from "./geminiVision";
-import { fileToBase64 } from "./fileUtils";
+import { fileToBase64, dataUrlToBlobUrl } from "./fileUtils";
 import { box2dToCss, categoryColor } from "./boxUtils";
 import type { WasteItem, DetectionResult } from "./types";
 import { useAppContext } from "../../context/AppContext";
@@ -109,13 +109,17 @@ export default function WasteDetector({
   }
 
   const handleReportWaste = (item: WasteItem) => {
+    const photoPayload = imageUrl && imageUrl.startsWith("data:")
+      ? dataUrlToBlobUrl(imageUrl)
+      : imageUrl;
+
     navigate("/user/complaint", {
       state: {
         prefillDescription: `Identified ${item.label} (${item.category}). ${
           item.is_contaminated ? `Contaminated with ${item.contaminant_type}. ` : ""
         }Recommended disposal: ${item.disposal_stream}.`,
         category: item.category,
-        photoUrl: imageUrl,
+        photoUrl: photoPayload,
       },
     });
   };
@@ -170,7 +174,7 @@ export default function WasteDetector({
             </div>
             <p className="text-xs text-slate-600 dark:text-slate-400">
               Enter your Google Gemini API key (<code className="text-emerald-600 dark:text-emerald-400">AIzaSy...</code>)
-              for live cloud vision inferences.
+              for live cloud vision inferences. Kept securely in memory for this browser session only.
             </p>
             <input
               type="password"

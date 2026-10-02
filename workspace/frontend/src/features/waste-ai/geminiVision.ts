@@ -33,27 +33,60 @@ export function stripDataUrlPrefix(base64: string): string {
   return commaIdx === -1 ? base64 : base64.slice(commaIdx + 1);
 }
 
-/** Get active Gemini API key from Vite env or user input */
+// In-memory key store to avoid persistent disk exposure
+let inMemoryApiKey = "";
+
+/** Get active Gemini API key from memory, sessionStorage, or Vite env */
 export function getActiveApiKey(): string {
+  if (inMemoryApiKey) {
+    return inMemoryApiKey;
+  }
+
   const envKey = ((import.meta.env.VITE_GEMINI_API_KEY as string) || "").trim();
   if (typeof window !== "undefined") {
-    const customKey = localStorage.getItem("VITE_GEMINI_API_KEY");
-    if (customKey && !customKey.startsWith("AIzaSy")) {
+    // Purge any previously saved localStorage key for CWE-522 compliance
+    try {
       localStorage.removeItem("VITE_GEMINI_API_KEY");
-    } else if (customKey && customKey.trim()) {
-      return customKey.trim();
+    } catch {
+      // ignore
+    }
+
+    try {
+      const sessionKey = sessionStorage.getItem("CLEANCONNECT_GEMINI_API_KEY");
+      if (sessionKey && !sessionKey.startsWith("AIzaSy")) {
+        sessionStorage.removeItem("CLEANCONNECT_GEMINI_API_KEY");
+      } else if (sessionKey && sessionKey.trim()) {
+        inMemoryApiKey = sessionKey.trim();
+        return inMemoryApiKey;
+      }
+    } catch {
+      // sessionStorage restricted / unavailable
     }
   }
   return envKey;
 }
 
-/** Save a user-provided Gemini API key to localStorage */
+/** Save a user-provided Gemini API key in session storage and memory */
 export function setActiveApiKey(key: string): void {
+  const trimmed = key.trim();
+  inMemoryApiKey = trimmed;
+
   if (typeof window !== "undefined") {
-    if (key.trim()) {
-      localStorage.setItem("VITE_GEMINI_API_KEY", key.trim());
-    } else {
+    // Ensure localStorage copy is wiped
+    try {
       localStorage.removeItem("VITE_GEMINI_API_KEY");
+    } catch {
+      // ignore
+    }
+
+    try {
+      if (trimmed) {
+        sessionStorage.setItem("CLEANCONNECT_GEMINI_API_KEY", trimmed);
+      } else {
+        sessionStorage.removeItem("CLEANCONNECT_GEMINI_API_KEY");
+      }
+    } catch {
+      // sessionStorage restricted / unavailable
     }
   }
 }
