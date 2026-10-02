@@ -31,7 +31,7 @@ const pickupRequests: any[] = [];
 
 // Helper: Haversine distance in km
 function haversine(lat1: number, lon1: number, lat2: number, lon2: number) {
-  const R = 6371; 
+  const R = 6371;
   const dLat = (lat2 - lat1) * Math.PI / 180;
   const dLon = (lon2 - lon1) * Math.PI / 180;
   const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
@@ -43,8 +43,8 @@ function haversine(lat1: number, lon1: number, lat2: number, lon2: number) {
 
 // Helper: Validate coordinates
 function isValidCoord(lat: any, lng: any): boolean {
-  return typeof lat === 'number' && typeof lng === 'number' && 
-         Number.isFinite(lat) && Number.isFinite(lng) && 
+  return typeof lat === 'number' && typeof lng === 'number' &&
+         Number.isFinite(lat) && Number.isFinite(lng) &&
          lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180;
 }
 
@@ -54,7 +54,7 @@ function isValidCoord(lat: any, lng: any): boolean {
 app.post('/api/classify', (req, res) => {
   const { description, filename } = req.body;
   const keywords = ((description || '') + ' ' + (filename || '')).toLowerCase();
-  
+
   let category = 'Dry';
   if (keywords.match(/(banana|food|apple|wet|peel|vegetable)/)) category = 'Wet';
   else if (keywords.match(/(bottle|plastic|wrapper)/)) category = 'Recyclable-Plastic';
@@ -74,17 +74,17 @@ app.post('/api/classify', (req, res) => {
 // 2. Nearest Facility
 app.post('/api/nearest-facility', (req, res) => {
   const { category, lat, lng } = req.body;
-  
+
   if (!isValidCoord(lat, lng)) {
     return res.status(400).json({ error: 'Invalid coordinates' });
   }
 
-  const targetType = (category === 'E-Waste' || category === 'Hazardous') 
-    ? 'E-Waste Center' 
+  const targetType = (category === 'E-Waste' || category === 'Hazardous')
+    ? 'E-Waste Center'
     : 'Recycling Plant';
 
   const eligible = facilities.filter(f => f.type === targetType);
-  
+
   let nearest = null;
   let minDistance = Infinity;
 
@@ -152,7 +152,7 @@ app.post('/api/pickup-requests', (req, res) => {
   if (!isValidCoord(lat, lng)) {
     return res.status(400).json({ error: 'Invalid coordinates' });
   }
-  
+
   const availableTeams = teams.filter(t => t.status === 'available');
   let nearestTeam = null;
   let minDistance = Infinity;
@@ -172,8 +172,8 @@ app.post('/api/pickup-requests', (req, res) => {
   nearestTeam.status = 'busy';
   const request = {
     id: randomUUID(),
-    category, 
-    lat, 
+    category,
+    lat,
     lng,
     team_name: nearestTeam.name,
     team_lat: nearestTeam.lat,

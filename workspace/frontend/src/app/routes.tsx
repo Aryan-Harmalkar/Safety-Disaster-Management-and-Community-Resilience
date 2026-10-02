@@ -13,5 +13,11 @@ export interface RouteConfig {
 
 export const routes: RouteConfig[] = [
   { path: '/', label: 'Home' },
-  // Add feature routes here
+  { path: '/user/scan', label: 'AI Scanner' },
+  { path: '/user/complaint', label: 'File Complaint' },
+  { path: '/user/status', label: 'Track Status' },
+  { path: '/user/facility', label: 'Facilities' },
+  { path: '/user/leaderboard', label: 'Leaderboard' },
+  { path: '/user/points', label: 'Points' },
+  { path: '/user/redeem', label: 'Redeem' },
 ];

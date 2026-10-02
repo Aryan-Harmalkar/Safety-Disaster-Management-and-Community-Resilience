@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { FileText, MapPin, Trophy, Activity, User } from 'lucide-react';
+import { FileText, MapPin, Trophy, Activity, User, Sparkles, ArrowRight } from 'lucide-react';
 import { useAppContext } from '../../hooks/useCleanConnect';
 
 export function UserDashboard() {
@@ -53,7 +53,7 @@ export function UserDashboard() {
               <span className="text-gray-500 dark:text-gray-400 font-medium pt-2">pts</span>
             </div>
             <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">{tier} Tier Citizen</p>
-            
+
             <div className="w-full bg-gray-100 dark:bg-gray-700 rounded-full h-2.5 mb-1">
               <div
                 className="bg-emerald-500 h-2.5 rounded-full transition-all duration-500"
@@ -64,8 +64,41 @@ export function UserDashboard() {
           </div>
         </Link>
 
+        {/* AI Waste Scanner Feature Banner */}
+        <Link
+          to="/user/scan"
+          className="block mb-6 p-4 rounded-2xl bg-gradient-to-r from-emerald-600 via-teal-600 to-sky-600 text-white shadow-lg hover:shadow-xl transition-all group"
+        >
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center group-hover:scale-105 transition-transform">
+                <Sparkles className="w-6 h-6 text-amber-300" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="font-bold text-sm">AI Waste Scanner</span>
+                  <span className="text-[10px] font-extrabold uppercase bg-amber-400 text-slate-900 px-1.5 py-0.5 rounded">
+                    Gemini 2.5
+                  </span>
+                </div>
+                <p className="text-xs text-emerald-100 mt-0.5">
+                  Scan photos to auto-detect items, check contamination & earn +20 pts
+                </p>
+              </div>
+            </div>
+            <ArrowRight className="w-5 h-5 text-emerald-200 group-hover:translate-x-1 transition-transform shrink-0" />
+          </div>
+        </Link>
+
         <h3 className="text-lg font-bold text-gray-800 dark:text-white mb-3 px-1">Quick Actions</h3>
-        <div className="grid grid-cols-2 gap-4 mb-8">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-8">
+          <Link to="/user/scan" className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-emerald-200 dark:border-emerald-800/60 flex flex-col items-center text-center gap-2 hover:bg-emerald-50/50 dark:hover:bg-gray-750 transition-colors">
+            <div className="bg-emerald-100 dark:bg-emerald-900/40 p-3 rounded-full text-emerald-600 dark:text-emerald-400">
+              <Sparkles className="h-6 w-6" />
+            </div>
+            <span className="text-sm font-semibold text-emerald-700 dark:text-emerald-300">AI Scanner</span>
+          </Link>
+
           <Link to="/user/complaint" className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 flex flex-col items-center text-center gap-2 hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors">
             <div className="bg-red-100 dark:bg-red-900/30 p-3 rounded-full text-red-600 dark:text-red-400">
               <FileText className="h-6 w-6" />
@@ -99,7 +132,7 @@ export function UserDashboard() {
           <h3 className="text-lg font-bold text-gray-800 dark:text-white">Recent Activity</h3>
           <Link to="/user/points" className="text-sm text-emerald-600 dark:text-emerald-400 font-medium">View all</Link>
         </div>
-        
+
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden mb-6">
           {pointHistory.length === 0 ? (
             <p className="p-4 text-center text-gray-500">No activity yet. Start by filing a complaint!</p>

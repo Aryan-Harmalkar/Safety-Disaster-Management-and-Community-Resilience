@@ -15,7 +15,7 @@ export function CollectorDashboard() {
 
   const activePickups = state.pickupRequests.filter(p => p.status !== 'Collected');
   const assignedComplaints = state.complaints.filter(c => c.status === 'Assigned');
-  const completedToday = state.pickupRequests.filter(p => p.status === 'Collected').length + 
+  const completedToday = state.pickupRequests.filter(p => p.status === 'Collected').length +
                          state.complaints.filter(c => c.status === 'Resolved').length;
 
   useEffect(() => {
@@ -25,7 +25,7 @@ export function CollectorDashboard() {
       mapInstanceRef.current = L.map(mapRef.current, {
         zoomControl: false
       }).setView([15.4909, 73.8278], 11);
-      
+
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(mapInstanceRef.current);
     }
 
@@ -84,7 +84,7 @@ export function CollectorDashboard() {
     if (currentStatus === 'Collected') return;
     try {
       const updated = await api.advancePickupStatus(id);
-      setPickupRequests(prev => prev.map(p => 
+      setPickupRequests(prev => prev.map(p =>
         p.id === id ? { ...p, status: updated.status } : p
       ));
     } catch (error) {
@@ -95,7 +95,7 @@ export function CollectorDashboard() {
   const handleResolveComplaint = async (id: string) => {
     try {
       const updated = await api.advanceComplaintStatus(id);
-      setComplaints(prev => prev.map(c => 
+      setComplaints(prev => prev.map(c =>
         c.id === id ? { ...c, status: updated.status } : c
       ));
     } catch (error) {
@@ -151,7 +151,7 @@ export function CollectorDashboard() {
       </div>
 
       <div className="px-4 space-y-6 max-w-lg mx-auto">
-        
+
         {/* Map Section */}
         <section className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
           <div className="p-3 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center bg-gray-50 dark:bg-gray-900">
@@ -170,7 +170,7 @@ export function CollectorDashboard() {
           <h3 className="text-lg font-bold text-gray-800 dark:text-white mb-3 flex items-center gap-2">
             <Truck className="h-5 w-5 text-blue-500" /> Active Pickups
           </h3>
-          
+
           {activePickups.length === 0 ? (
             <p className="text-gray-500 text-sm italic p-4 bg-white dark:bg-gray-800 rounded-xl">No active pickups.</p>
           ) : (
@@ -188,12 +188,12 @@ export function CollectorDashboard() {
                       {pickup.status}
                     </span>
                   </div>
-                  
-                  <button 
+
+                  <button
                     onClick={() => handleAdvancePickup(pickup.id, pickup.status)}
                     className="mt-3 w-full bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/20 dark:hover:bg-blue-900/40 text-blue-700 dark:text-blue-400 font-semibold py-2 rounded-lg text-sm transition flex justify-center items-center gap-2 border border-blue-200 dark:border-blue-800"
                   >
-                    {pickup.status === 'Requested' ? 'Accept Request' : 
+                    {pickup.status === 'Requested' ? 'Accept Request' :
                      pickup.status === 'Assigned' ? 'Mark En Route' : 'Mark as Collected'}
                     <ArrowRight className="h-4 w-4" />
                   </button>
@@ -208,7 +208,7 @@ export function CollectorDashboard() {
           <h3 className="text-lg font-bold text-gray-800 dark:text-white mb-3 flex items-center gap-2">
             <AlertTriangle className="h-5 w-5 text-amber-500" /> Assigned Complaints
           </h3>
-          
+
           {assignedComplaints.length === 0 ? (
             <p className="text-gray-500 text-sm italic p-4 bg-white dark:bg-gray-800 rounded-xl">No assigned complaints.</p>
           ) : (
@@ -223,8 +223,8 @@ export function CollectorDashboard() {
                       {complaint.description}
                     </p>
                   </div>
-                  
-                  <button 
+
+                  <button
                     onClick={() => handleResolveComplaint(complaint.id)}
                     className="mt-3 w-full bg-amber-50 hover:bg-amber-100 dark:bg-amber-900/20 dark:hover:bg-amber-900/40 text-amber-700 dark:text-amber-400 font-semibold py-2 rounded-lg text-sm transition flex justify-center items-center gap-2 border border-amber-200 dark:border-amber-800"
                   >

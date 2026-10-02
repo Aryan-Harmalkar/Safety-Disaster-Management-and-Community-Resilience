@@ -10,7 +10,7 @@ export function FacilityPage() {
   const navigate = useNavigate();
   const { state, addPickupRequest } = useAppContext();
   const { nearestFacility, pickupRequests, currentLocation } = state;
-  
+
   const [isRequesting, setIsRequesting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
 
@@ -19,19 +19,19 @@ export function FacilityPage() {
 
   useEffect(() => {
     if (!mapRef.current || !nearestFacility || !currentLocation) return;
-    
+
     if (!mapInstanceRef.current) {
       mapInstanceRef.current = L.map(mapRef.current, {
         zoomControl: false,
         dragging: false,
         scrollWheelZoom: false
       }).setView([currentLocation.latitude, currentLocation.longitude], 12);
-      
+
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(mapInstanceRef.current);
-      
+
       // User marker
       L.marker([currentLocation.latitude, currentLocation.longitude]).addTo(mapInstanceRef.current);
-      
+
       // Facility marker (blue)
       const facilityIcon = L.divIcon({
         className: 'bg-transparent',
@@ -39,7 +39,7 @@ export function FacilityPage() {
         iconSize: [36, 36],
         iconAnchor: [18, 36]
       });
-      
+
       L.marker([nearestFacility.lat, nearestFacility.lng], { icon: facilityIcon })
         .addTo(mapInstanceRef.current)
         .bindPopup(nearestFacility.name);
@@ -62,7 +62,7 @@ export function FacilityPage() {
 
   const handleRequestPickup = async () => {
     if (!nearestFacility || !currentLocation) return;
-    
+
     setIsRequesting(true);
     try {
       const res = await api.createPickupRequest(
@@ -70,7 +70,7 @@ export function FacilityPage() {
         currentLocation.latitude,
         currentLocation.longitude
       );
-      
+
       addPickupRequest({
         id: res.id,
         team_name: res.team_name,
@@ -83,7 +83,7 @@ export function FacilityPage() {
         created_at: new Date().toISOString()
       });
       setShowSuccess(true);
-      
+
       setTimeout(() => setShowSuccess(false), 3000);
     } catch (error) {
       alert("Failed to request pickup");
@@ -138,7 +138,7 @@ export function FacilityPage() {
                     {nearestFacility.type.toUpperCase()}
                   </span>
                 </div>
-                
+
                 <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 text-sm mb-4">
                   <Navigation className="h-4 w-4" />
                   <span>{nearestFacility.distance_km.toFixed(1)} km away</span>
@@ -169,7 +169,7 @@ export function FacilityPage() {
                 <h3 className="text-lg font-bold text-gray-800 dark:text-white">Recent Requests</h3>
                 <Link to="/user/status" className="text-sm font-medium text-emerald-600 dark:text-emerald-400">View All</Link>
               </div>
-              
+
               {pickupRequests.length === 0 ? (
                 <p className="text-center text-gray-500 py-4">No recent pickup requests.</p>
               ) : (

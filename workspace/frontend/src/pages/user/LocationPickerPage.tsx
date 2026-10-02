@@ -41,7 +41,7 @@ export function LocationPickerPage() {
     // Initialize map
     if (!mapInstanceRef.current) {
       mapInstanceRef.current = L.map(mapRef.current).setView(coords, 13);
-      
+
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; OpenStreetMap contributors'
       }).addTo(mapInstanceRef.current);
@@ -127,7 +127,7 @@ export function LocationPickerPage() {
             <Crosshair className={`h-4 w-4 ${isLocating ? 'animate-spin' : ''}`} />
             <span>{isLocating ? 'Locating...' : 'Live Location'}</span>
           </button>
-          
+
           {TOWNS.map(town => (
             <button
               key={town.name}
@@ -158,7 +158,7 @@ export function LocationPickerPage() {
             </span>
           </div>
         </div>
-        
+
         <button
           onClick={confirmLocation}
           className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3.5 px-4 rounded-xl shadow-md transition-colors focus:ring-4 focus:ring-emerald-300"

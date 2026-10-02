@@ -23,7 +23,7 @@ export function RedemptionPage() {
     if (points >= cost) {
       addPoints(-cost, `Redeemed: ${name}`);
       setRedeemed([...redeemed, id]);
-      
+
       setShowToast({ show: true, msg: `Successfully redeemed ${name}!` });
       setTimeout(() => setShowToast({ show: false, msg: '' }), 3000);
     }
@@ -59,33 +59,33 @@ export function RedemptionPage() {
           {REWARDS.map(reward => {
             const canAfford = points >= reward.cost;
             const isRedeemed = redeemed.includes(reward.id);
-            
+
             return (
-              <div 
-                key={reward.id} 
+              <div
+                key={reward.id}
                 className={`bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-sm border ${
                   isRedeemed ? 'border-emerald-500' : 'border-gray-100 dark:border-gray-700'
                 } flex flex-col items-center text-center`}
               >
                 <div className="text-4xl mb-3">{reward.icon}</div>
                 <h3 className="font-bold text-gray-800 dark:text-white text-sm mb-2 h-10">{reward.name}</h3>
-                
+
                 <div className="mt-auto w-full">
                   <div className="text-emerald-600 dark:text-emerald-400 font-bold mb-3">
                     {reward.cost} pts
                   </div>
-                  
+
                   {isRedeemed ? (
                     <button disabled className="w-full bg-gray-100 dark:bg-gray-700 text-emerald-600 dark:text-emerald-400 font-bold py-2 rounded-lg flex justify-center items-center gap-1">
                       <CheckCircle2 className="h-4 w-4" /> Redeemed
                     </button>
                   ) : (
-                    <button 
+                    <button
                       onClick={() => handleRedeem(reward.id, reward.name, reward.cost)}
                       disabled={!canAfford}
                       className={`w-full py-2 rounded-lg font-bold transition-colors ${
-                        canAfford 
-                          ? 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm' 
+                        canAfford
+                          ? 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm'
                           : 'bg-gray-100 dark:bg-gray-700 text-gray-400 cursor-not-allowed'
                       }`}
                     >

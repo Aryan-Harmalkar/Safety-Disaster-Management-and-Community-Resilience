@@ -13,10 +13,10 @@ export function StatusPage() {
     if (currentStatus === 'Resolved') return;
     try {
       const updated = await api.advanceComplaintStatus(id);
-      setComplaints(prev => prev.map(c => 
+      setComplaints(prev => prev.map(c =>
         c.id === id ? { ...c, status: updated.status } : c
       ));
-      
+
       if (updated.status === 'Resolved') {
         addPoints(25, 'Complaint resolved');
       }
@@ -29,10 +29,10 @@ export function StatusPage() {
     if (currentStatus === 'Collected') return;
     try {
       const updated = await api.advancePickupStatus(id);
-      setPickupRequests(prev => prev.map(p => 
+      setPickupRequests(prev => prev.map(p =>
         p.id === id ? { ...p, status: updated.status } : p
       ));
-      
+
       if (updated.status === 'Collected') {
         addPoints(20, 'Waste collected');
       }
@@ -56,10 +56,10 @@ export function StatusPage() {
             <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 line-clamp-2">{complaint.description}</p>
           </div>
           <div className={`p-2 rounded-full ${
-            complaint.status === 'Resolved' ? 'bg-green-100 text-green-600' : 
+            complaint.status === 'Resolved' ? 'bg-green-100 text-green-600' :
             complaint.status === 'Assigned' ? 'bg-amber-100 text-amber-600' : 'bg-red-100 text-red-600'
           }`}>
-            {complaint.status === 'Resolved' ? <CheckCircle2 className="h-5 w-5" /> : 
+            {complaint.status === 'Resolved' ? <CheckCircle2 className="h-5 w-5" /> :
              complaint.status === 'Assigned' ? <Clock className="h-5 w-5" /> : <AlertCircle className="h-5 w-5" />}
           </div>
         </div>
@@ -67,15 +67,15 @@ export function StatusPage() {
         {/* Progress Bar */}
         <div className="mt-4 relative">
           <div className="absolute top-1/2 left-0 w-full h-1 bg-gray-200 dark:bg-gray-700 -translate-y-1/2 z-0 rounded"></div>
-          <div className="absolute top-1/2 left-0 h-1 bg-emerald-500 -translate-y-1/2 z-0 rounded transition-all duration-500" 
+          <div className="absolute top-1/2 left-0 h-1 bg-emerald-500 -translate-y-1/2 z-0 rounded transition-all duration-500"
                style={{ width: `${(Math.max(0, currentStepIndex) / (steps.length - 1)) * 100}%` }}></div>
-          
+
           <div className="relative z-10 flex justify-between">
             {steps.map((step, idx) => (
               <div key={step} className="flex flex-col items-center">
                 <div className={`w-4 h-4 rounded-full border-2 ${
-                  idx <= currentStepIndex 
-                    ? 'bg-emerald-500 border-emerald-500' 
+                  idx <= currentStepIndex
+                    ? 'bg-emerald-500 border-emerald-500'
                     : 'bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600'
                 }`}></div>
                 <span className={`text-[10px] uppercase font-bold mt-1 ${
@@ -87,7 +87,7 @@ export function StatusPage() {
         </div>
 
         {complaint.status !== 'Resolved' && (
-          <button 
+          <button
             onClick={() => handleAdvanceComplaint(complaint.id, complaint.status)}
             className="mt-4 w-full py-2 bg-gray-50 dark:bg-gray-700/50 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200 text-sm font-medium rounded-lg transition-colors border border-gray-200 dark:border-gray-600"
           >
@@ -120,15 +120,15 @@ export function StatusPage() {
         {/* Progress Bar */}
         <div className="mt-4 relative">
           <div className="absolute top-1/2 left-0 w-full h-1 bg-gray-200 dark:bg-gray-700 -translate-y-1/2 z-0 rounded"></div>
-          <div className="absolute top-1/2 left-0 h-1 bg-blue-500 -translate-y-1/2 z-0 rounded transition-all duration-500" 
+          <div className="absolute top-1/2 left-0 h-1 bg-blue-500 -translate-y-1/2 z-0 rounded transition-all duration-500"
                style={{ width: `${(Math.max(0, currentStepIndex) / (steps.length - 1)) * 100}%` }}></div>
-          
+
           <div className="relative z-10 flex justify-between">
             {steps.map((step, idx) => (
               <div key={step} className="flex flex-col items-center">
                 <div className={`w-4 h-4 rounded-full border-2 ${
-                  idx <= currentStepIndex 
-                    ? 'bg-blue-500 border-blue-500' 
+                  idx <= currentStepIndex
+                    ? 'bg-blue-500 border-blue-500'
                     : 'bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600'
                 }`}></div>
                 <span className={`text-[10px] uppercase font-bold mt-1 ${
@@ -140,7 +140,7 @@ export function StatusPage() {
         </div>
 
         {pickup.status !== 'Collected' && (
-          <button 
+          <button
             onClick={() => handleAdvancePickup(pickup.id, pickup.status)}
             className="mt-4 w-full py-2 bg-gray-50 dark:bg-gray-700/50 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200 text-sm font-medium rounded-lg transition-colors border border-gray-200 dark:border-gray-600"
           >
@@ -165,8 +165,8 @@ export function StatusPage() {
           <button
             onClick={() => setActiveTab('complaints')}
             className={`flex-1 py-2 text-sm font-semibold rounded-lg flex justify-center items-center gap-2 transition-colors ${
-              activeTab === 'complaints' 
-                ? 'bg-white dark:bg-gray-700 text-gray-800 dark:text-white shadow-sm' 
+              activeTab === 'complaints'
+                ? 'bg-white dark:bg-gray-700 text-gray-800 dark:text-white shadow-sm'
                 : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
             }`}
           >
@@ -176,8 +176,8 @@ export function StatusPage() {
           <button
             onClick={() => setActiveTab('pickups')}
             className={`flex-1 py-2 text-sm font-semibold rounded-lg flex justify-center items-center gap-2 transition-colors ${
-              activeTab === 'pickups' 
-                ? 'bg-white dark:bg-gray-700 text-gray-800 dark:text-white shadow-sm' 
+              activeTab === 'pickups'
+                ? 'bg-white dark:bg-gray-700 text-gray-800 dark:text-white shadow-sm'
                 : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
             }`}
           >

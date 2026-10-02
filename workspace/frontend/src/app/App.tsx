@@ -14,6 +14,7 @@ import { StatusPage } from '../pages/user/StatusPage';
 import { LeaderboardPage } from '../pages/user/LeaderboardPage';
 import { PointsPage } from '../pages/user/PointsPage';
 import { RedemptionPage } from '../pages/user/RedemptionPage';
+import { WasteScannerPage } from '../pages/user/WasteScannerPage';
 import { CollectorDashboard } from '../pages/collector/CollectorDashboard';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -59,6 +60,14 @@ function AppRoutes() {
           element={
             <ProtectedRoute>
               <PageLayout><ComplaintPage /></PageLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/user/scan"
+          element={
+            <ProtectedRoute>
+              <PageLayout><WasteScannerPage /></PageLayout>
             </ProtectedRoute>
           }
         />

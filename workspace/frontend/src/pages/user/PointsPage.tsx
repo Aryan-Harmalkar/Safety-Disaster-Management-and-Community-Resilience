@@ -26,14 +26,14 @@ export function PointsPage() {
           <div className="absolute top-0 right-0 -mr-8 -mt-8 opacity-10">
             <Award className="h-48 w-48" />
           </div>
-          
+
           <div className="relative z-10">
             <div className="text-5xl mb-2 flex justify-center items-center gap-3">
               <span>{tierBadge}</span>
             </div>
             <h2 className="text-5xl font-extrabold mb-1">{points}</h2>
             <p className="text-emerald-100 font-medium text-lg mb-6">{tier} Tier Citizen</p>
-            
+
             <div className="bg-black/20 rounded-xl p-4 backdrop-blur-sm">
               <div className="flex justify-between text-sm font-medium mb-2">
                 <span>Current: {points}</span>
@@ -53,8 +53,8 @@ export function PointsPage() {
         </div>
 
         {/* Redeem Button */}
-        <Link 
-          to="/user/redeem" 
+        <Link
+          to="/user/redeem"
           className="flex items-center justify-center gap-2 w-full bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-750 text-emerald-600 dark:text-emerald-400 font-bold py-4 rounded-xl shadow-sm border border-emerald-100 dark:border-gray-700 transition-colors"
         >
           <Gift className="h-6 w-6" />

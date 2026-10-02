@@ -22,7 +22,7 @@ export function LeaderboardPage() {
 
     const combined = [...STATIC_LEADERBOARD, currentUserEntry];
     combined.sort((a, b) => b.points - a.points);
-    
+
     // Assign ranks
     return combined.map((entry, index) => ({
       ...entry,
@@ -82,10 +82,10 @@ export function LeaderboardPage() {
               <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
                 {fullLeaderboard.map((entry) => {
                   const isCurrentUser = entry.id === 'current-user';
-                  
+
                   return (
-                    <tr 
-                      key={entry.id} 
+                    <tr
+                      key={entry.id}
                       className={`transition-colors ${isCurrentUser ? 'bg-emerald-50 dark:bg-emerald-900/20' : 'hover:bg-gray-50 dark:hover:bg-gray-750'}`}
                     >
                       <td className="p-4 text-center align-middle">

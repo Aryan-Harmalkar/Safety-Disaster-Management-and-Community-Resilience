@@ -16,10 +16,12 @@ import {
   Star,
   Gift,
   MapPin,
+  Sparkles,
 } from 'lucide-react';
 
 const userLinks = [
   { to: '/user', label: 'Home', icon: Home },
+  { to: '/user/scan', label: 'AI Scanner', icon: Sparkles },
   { to: '/user/complaint', label: 'File Complaint', icon: AlertTriangle },
   { to: '/user/status', label: 'Track Status', icon: Activity },
   { to: '/user/facility', label: 'Facility', icon: MapPin },

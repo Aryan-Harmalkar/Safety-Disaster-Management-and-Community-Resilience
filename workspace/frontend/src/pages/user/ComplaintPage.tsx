@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { Camera, Image as ImageIcon, MapPin, CheckCircle2, ArrowLeft, AlertCircle } from 'lucide-react';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
+import { Camera, Image as ImageIcon, MapPin, CheckCircle2, ArrowLeft, AlertCircle, Sparkles } from 'lucide-react';
 import { useAppContext } from '../../hooks/useCleanConnect';
 import * as api from '../../services/cleanconnectApi';
 import L from 'leaflet';
@@ -8,12 +8,16 @@ import 'leaflet/dist/leaflet.css';
 
 export function ComplaintPage() {
   const navigate = useNavigate();
+  const routerLocation = useLocation();
+  const routerState = routerLocation.state as { prefillDescription?: string; photoUrl?: string; category?: string } | null;
   const { state, setLocation, addComplaint, addPoints, setNearestFacility } = useAppContext();
-  
-  const [description, setDescription] = useState('');
-  const [photoUrl, setPhotoUrl] = useState<string | null>(null);
+
+  const [description, setDescription] = useState(routerState?.prefillDescription || '');
+  const [photoUrl, setPhotoUrl] = useState<string | null>(routerState?.photoUrl || null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [classificationResult, setClassificationResult] = useState<{category: string, confidence: number} | null>(null);
+  const [classificationResult, setClassificationResult] = useState<{category: string, confidence: number} | null>(
+    routerState?.category ? { category: routerState.category, confidence: 0.95 } : null
+  );
   const [success, setSuccess] = useState(false);
 
   const mapRef = useRef<HTMLDivElement>(null);
@@ -26,7 +30,7 @@ export function ComplaintPage() {
   // Initialize mini-map
   useEffect(() => {
     if (!mapRef.current) return;
-    
+
     if (!mapInstanceRef.current) {
       mapInstanceRef.current = L.map(mapRef.current, {
         zoomControl: false,
@@ -34,7 +38,7 @@ export function ComplaintPage() {
         scrollWheelZoom: false,
         doubleClickZoom: false
       }).setView(coords, 14);
-      
+
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(mapInstanceRef.current);
     } else {
       mapInstanceRef.current.setView(coords, 14);
@@ -94,7 +98,7 @@ export function ComplaintPage() {
         description,
         classification.category as any
       );
-      
+
       const newComplaint = {
         id: res.id,
         lat: coords[0],
@@ -134,7 +138,7 @@ export function ComplaintPage() {
             <CheckCircle2 className="h-10 w-10 text-green-600 dark:text-green-400" />
           </div>
           <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-2">Complaint Logged!</h2>
-          
+
           <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-xl mb-6 text-left">
             <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">AI Classification:</p>
             <div className="flex items-center gap-2">
@@ -196,8 +200,8 @@ export function ComplaintPage() {
           {photoUrl ? (
             <div className="relative rounded-xl overflow-hidden h-48 border border-gray-200 dark:border-gray-700 bg-black">
               <img src={photoUrl} alt="Preview" className="w-full h-full object-contain" />
-              <button 
-                type="button" 
+              <button
+                type="button"
                 onClick={() => setPhotoUrl(null)}
                 className="absolute top-2 right-2 bg-white/90 text-red-600 px-3 py-1 rounded-full text-sm font-bold shadow"
               >
@@ -219,10 +223,19 @@ export function ComplaintPage() {
             </div>
           )}
           {!photoUrl && (
-            <p className="text-xs text-gray-500 mt-2 flex items-center gap-1">
-              <AlertCircle className="h-3 w-3" />
-              Upload a photo for AI classification and earn +15 bonus points!
-            </p>
+            <div className="mt-3 space-y-2">
+              <Link
+                to="/user/scan"
+                className="w-full py-2.5 px-3 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white text-xs font-bold flex items-center justify-center gap-2 shadow-sm transition-all"
+              >
+                <Sparkles className="w-4 h-4 text-amber-300" />
+                <span>Launch Gemini AI Waste Scanner (Auto-Detect & Contamination)</span>
+              </Link>
+              <p className="text-xs text-gray-500 flex items-center gap-1">
+                <AlertCircle className="h-3 w-3" />
+                Upload a photo for AI classification and earn +15 bonus points!
+              </p>
+            </div>
           )}
         </section>
 
@@ -258,4 +271,3 @@ export function ComplaintPage() {
     </main>
   );
 };
-
